@@ -1,3 +1,13 @@
+.gradle/
+.idea/
+build/
+gradle/
+local.properties
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild
+*proguard-log.pro
 # Prerequisites
 *.d
 
