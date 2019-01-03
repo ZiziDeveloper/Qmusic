@@ -60,3 +60,7 @@ void NotifyApplication::notifyPrepared(int type) {
         jvm->DetachCurrentThread();
     }
 }
+
+void NotifyApplication::notifyLoad(bool load) {
+
+}

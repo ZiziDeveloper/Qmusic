@@ -6,7 +6,7 @@
 
 AudioProccessor::AudioProccessor() {
     pAudioCoder = new AudioCoder();
-    pAudioPlayer = new AudioPlayer();
+    pAudioPlayer = new AudioPlayer(this);
 }
 
 AudioProccessor::~AudioProccessor() {
@@ -23,7 +23,12 @@ void AudioProccessor::prepare() {
 }
 
 void AudioProccessor::start() {
-
+    if (NULL != pAudioPlayer) {
+        pAudioPlayer->start();
+    }
+    if (NULL != pAudioCoder) {
+        pAudioCoder->start();
+    }
 }
 
 void AudioProccessor::pause() {

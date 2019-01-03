@@ -4,10 +4,12 @@
 
 #include "AudioPlayer.h"
 
-AudioPlayer::AudioPlayer() {}
+AudioPlayer::AudioPlayer(AudioProccessor* proccessor) {
+    pAudioProccessor = proccessor;
+}
 
 AudioPlayer::~AudioPlayer() {
-
+    pAudioProccessor = NULL;
 }
 
 bool AudioPlayer::prepare() {
@@ -123,6 +125,15 @@ bool AudioPlayer::prepareSLOutputMix() {
     return true;
 }
 
+void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
+    AudioPlayer *pPlayer = (AudioPlayer*) context;
+    if (pPlayer != NULL) {
+        int dataSize = pPlayer->pAudioProccessor->pAudioCoder->reSampleAudio((void **) &pPlayer->pOutBuf);
+        (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->pOutBuf
+                , dataSize * 2 * 2);
+    }
+}
+
 bool AudioPlayer::prepareSLPlay() {
     //TODO[truyayong] 失败之后资源释放问题
     //配置pcm格式
@@ -183,12 +194,13 @@ bool AudioPlayer::prepareSLPlay() {
     }
 
     //TODO[truyayong] 设置缓冲回调接口
-    res = (*pcmBufQueueItf)->RegisterCallback(pcmBufQueueItf, NULL, this);
+    res = (*pcmBufQueueItf)->RegisterCallback(pcmBufQueueItf, methodBufferCallBack, this);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("pcmBufQueueItf RegisterCallback fail code : %d", res);
         NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "pcmBufQueueItf RegisterCallback fail");
         return false;
     }
+    methodBufferCallBack(pcmBufQueueItf, this);
 
     //TODO[truyayong] 设置播放的初始状态 音量，声道，播放状态等
     return true;

@@ -15,6 +15,8 @@ private:
     char* pUrl;
 public:
     bool bExit;
+    bool bSeeking;
+    bool bLoading;
 public:
     static PlaySession* getIns();
 

@@ -32,6 +32,8 @@ public:
     void init(_JavaVM *jvm, JNIEnv *jenv, jobject* pObj);
     void notifyError(int type, int code, const char* msg);
     void notifyPrepared(int type);
+    void notifyLoad(bool load);
+    void notifyComplete();
 };
 
 

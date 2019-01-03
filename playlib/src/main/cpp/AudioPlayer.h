@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include "AndroidLog.h"
 #include "NotifyApplication.h"
+#include "AudioProccessor.h"
 
 extern "C" {
 #include <SLES/OpenSLES.h>
@@ -37,8 +38,11 @@ private:
     SLVolumeItf pcmVolumeItf = NULL;
     SLMuteSoloItf  pcmMuteSoloItf = NULL;
 
+public:
+    AudioProccessor* pAudioProccessor = NULL;
     //播放缓冲队列
     SLAndroidSimpleBufferQueueItf  pcmBufQueueItf = NULL;
+    uint8_t *pOutBuf = NULL;
 private:
     //创建引擎
     bool prepareSLEngien();
@@ -47,7 +51,7 @@ private:
     //创建播放器
     bool prepareSLPlay();
 public:
-    AudioPlayer();
+    AudioPlayer(AudioProccessor* proccessor);
     virtual ~AudioPlayer();
 
     bool prepare();

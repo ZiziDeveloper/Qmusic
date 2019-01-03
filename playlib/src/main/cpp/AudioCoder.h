@@ -10,8 +10,11 @@
 #include "ErrUtil.h"
 #include "PlaySession.h"
 #include "NotifyApplication.h"
+#include "PacketQueue.h"
+
 extern "C" {
 #include <libavformat/avformat.h>
+#include <libavutil/time.h>
 };
 
 /**
@@ -23,9 +26,11 @@ private:
     int mStreamIndex = -1;
     AVCodecContext* pAVCodecCtx = NULL;
     AVCodecParameters* pCodecPara = NULL;
+    PacketQueue* pQueue = NULL;
 public:
     pthread_t prepareDecodeThread;
     pthread_mutex_t prepareDecodeMutex;
+    int sampleNum;
 public:
     AudioCoder();
     virtual ~AudioCoder();
@@ -33,6 +38,8 @@ public:
     void prepare();
     void prepareDecoder();
     void start();
+    //音频重采样
+    int reSampleAudio(void **pcmBuf);
     int getSampleRate();
 
 };

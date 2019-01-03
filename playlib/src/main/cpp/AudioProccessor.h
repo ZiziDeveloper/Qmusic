@@ -14,6 +14,8 @@
  */
 class AudioProccessor {
 private:
+    uint8_t *pOutBuf = NULL;
+public:
     AudioCoder *pAudioCoder;
     AudioPlayer *pAudioPlayer;
 public:
