@@ -55,10 +55,9 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             src/main/cpp/PlayNative.cpp
+              src/main/cpp/PlayNative.cpp
               src/main/cpp/AudioProccessor.cpp
               src/main/cpp/AudioCoder.cpp
-              src/main/cpp/AudioPlayer.cpp
               src/main/cpp/NotifyApplication.cpp
               src/main/cpp/PlaySession.cpp
               src/main/cpp/ErrUtil.cpp

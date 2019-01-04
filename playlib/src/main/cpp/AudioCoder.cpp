@@ -2,7 +2,7 @@
 // Created by Administrator on 2018/12/15 0015.
 //
 
-#include <libswresample/swresample.h>
+
 #include "AudioCoder.h"
 
 AudioCoder::AudioCoder() {

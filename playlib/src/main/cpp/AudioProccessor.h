@@ -1,23 +1,57 @@
 //
 // Created by Administrator on 2018/12/15 0015.
 //
-
+#pragma once
 #ifndef QMUSIC_AUDIOPROCCESSOR_H
 #define QMUSIC_AUDIOPROCCESSOR_H
 
 #include <stdint.h>
 #include "AudioCoder.h"
-#include "AudioPlayer.h"
+#define MIX_ITF_NUM 1
+#define PLAY_ITF_NUM 4
+
+#include <stdint.h>
+#include "AndroidLog.h"
+#include "NotifyApplication.h"
+
+extern "C" {
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
+};
 
 /**
- * 音频处理层，调度AudioCoder与AudioPlayer
+ * 音频处理层，负责播放音频与调度AudioCoder解码
  */
 class AudioProccessor {
 private:
-    uint8_t *pOutBuf = NULL;
+    //opensl 引擎
+    SLObjectItf engineObj = NULL;
+    SLEngineItf engineItf = NULL;
+
+    //混音器
+    SLObjectItf  outputMixObj = NULL;
+    SLEnvironmentalReverbItf outputMixEnvironmentalReverb = NULL;
+    SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
+
+    //opensl 播放pcm接口
+    SLObjectItf pcmPlayObj = NULL;
+    SLPlayItf  pcmPlayItf = NULL;
+    SLVolumeItf pcmVolumeItf = NULL;
+    SLMuteSoloItf  pcmMuteSoloItf = NULL;
+
 public:
     AudioCoder *pAudioCoder;
-    AudioPlayer *pAudioPlayer;
+    //播放缓冲队列
+    SLAndroidSimpleBufferQueueItf  pcmBufQueueItf = NULL;
+    uint8_t *pOutBuf = NULL;
+
+private:
+    //创建引擎
+    bool prepareSLEngien();
+    //创建混音器和播放器,用于输出音频
+    bool prepareSLOutputMixAndPlay();
+    //创建播放器
+    bool prepareSLPlay(SLDataSink& audioSink);
 public:
     AudioProccessor();
     virtual ~AudioProccessor();

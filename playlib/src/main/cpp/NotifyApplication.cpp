@@ -64,3 +64,7 @@ void NotifyApplication::notifyPrepared(int type) {
 void NotifyApplication::notifyLoad(bool load) {
 
 }
+
+void NotifyApplication::notifyComplete() {
+
+}
