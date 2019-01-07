@@ -12,6 +12,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     PlayJniProxy mPlayJniProxy;
+    private String playUrl = "http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onPrepare(View view) {
-        mPlayJniProxy.prepare("http11://ngcdn004.cnr.cn/live/dszs/index.m3u8", 0, 0, 0);
+        mPlayJniProxy.prepare(playUrl, 0, 0, 0);
+    }
+
+    public void onStart(View view) {
+        mPlayJniProxy.start();
     }
 }

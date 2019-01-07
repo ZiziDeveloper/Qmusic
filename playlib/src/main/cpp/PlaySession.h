@@ -8,15 +8,23 @@
 /**
  * 存储播放会话的状态
  */
+const int PLAY_STATE_STOPPED = 1;
+const int PLAY_STATE_PAUSED = 2;
+const int PLAY_STATE_PLAYING = 3;
 class PlaySession {
 private:
     PlaySession();
     static PlaySession *p;
     char* pUrl;
 public:
-    bool bExit;
-    bool bSeeking;
-    bool bLoading;
+    bool bExit = false;
+    bool bSeeking = false;
+    bool bLoading = true;
+    int volume = 70;
+    int playState = PLAY_STATE_PLAYING;
+    int channelLayout = 2;
+    //播放器输出采样率
+    int outSmapleRate = 44100;
 public:
     static PlaySession* getIns();
 

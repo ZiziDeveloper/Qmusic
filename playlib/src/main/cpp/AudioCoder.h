@@ -32,6 +32,7 @@ public:
     pthread_t prepareDecodeThread;
     pthread_mutex_t prepareDecodeMutex;
     int sampleNum;
+    uint8_t *buffer = NULL;
 public:
     AudioCoder();
     virtual ~AudioCoder();

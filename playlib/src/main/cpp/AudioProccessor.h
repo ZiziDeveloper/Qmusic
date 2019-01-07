@@ -41,17 +41,16 @@ private:
 
 public:
     AudioCoder *pAudioCoder;
+    //开始播放线程
+    pthread_t startPlayThread;
+    pthread_t startDecodeThread;
     //播放缓冲队列
     SLAndroidSimpleBufferQueueItf  pcmBufQueueItf = NULL;
     uint8_t *pOutBuf = NULL;
 
 private:
-    //创建引擎
-    bool prepareSLEngien();
-    //创建混音器和播放器,用于输出音频
-    bool prepareSLOutputMixAndPlay();
-    //创建播放器
-    bool prepareSLPlay(SLDataSink& audioSink);
+    void setPlayState(int state);
+    int adapterSLSampleRate(int rate);
 public:
     AudioProccessor();
     virtual ~AudioProccessor();
@@ -66,6 +65,13 @@ public:
     void switchChannel(int channel);
     void setPitch(float pitch);
     void setSpeed(float speed);
+
+    //创建引擎
+    bool prepareSLEngien();
+    //创建混音器和播放器,用于输出音频
+    bool prepareSLOutputMixAndPlay();
+    //创建播放器
+    bool prepareSLPlay(SLDataSink& audioSink);
 
 };
 

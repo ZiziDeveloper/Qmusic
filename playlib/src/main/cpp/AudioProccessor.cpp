@@ -18,12 +18,24 @@ void AudioProccessor::prepare() {
     }
 }
 
-void AudioProccessor::start() {
-    prepareSLEngien();
-    prepareSLOutputMixAndPlay();
-    if (NULL != pAudioCoder) {
-        pAudioCoder->start();
+void* startPlayRunnable(void* data) {
+    AudioProccessor* proccessor = (AudioProccessor*) data;
+    proccessor->prepareSLEngien();
+    proccessor->prepareSLOutputMixAndPlay();
+    pthread_exit(&proccessor->startPlayThread);
+}
+
+void* startDecodeRunnable(void* data) {
+    AudioProccessor* proccessor = (AudioProccessor*) data;
+    if (NULL != proccessor->pAudioCoder) {
+        proccessor->pAudioCoder->start();
     }
+    pthread_exit(&proccessor->startDecodeThread);
+}
+
+void AudioProccessor::start() {
+    pthread_create(&startDecodeThread, NULL, startDecodeRunnable, this);
+    pthread_create(&startPlayThread,NULL, startPlayRunnable, this);
 }
 
 void AudioProccessor::pause() {
@@ -120,9 +132,11 @@ bool AudioProccessor::prepareSLOutputMixAndPlay() {
 }
 
 void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
+    LOGE("[truyayong] methodBufferCallBack enter");
     AudioProccessor *pPlayer = (AudioProccessor*) context;
     if (pPlayer != NULL) {
         int dataSize = pPlayer->pAudioCoder->reSampleAudio((void **) &pPlayer->pOutBuf);
+        LOGE("[truyayong] dataSize : %d ", dataSize);
         (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->pOutBuf
                 , dataSize * 2 * 2);
     }
@@ -135,7 +149,7 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     SLDataFormat_PCM pcm = {
             SL_DATAFORMAT_PCM,//播放pcm格式的数据
             2,//2个声道（立体声）
-            44100,//44100hz的频率 TODO[truyayong] 写成一个通用接口
+            adapterSLSampleRate(PlaySession::getIns()->outSmapleRate),//44100hz的频率
             SL_PCMSAMPLEFORMAT_FIXED_16,//位数 16位
             SL_PCMSAMPLEFORMAT_FIXED_16,//和位数一致就行
             SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,//立体声（前左前右）
@@ -148,7 +162,7 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     const SLboolean req[PLAY_ITF_NUM] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
     res = (*engineItf)->CreateAudioPlayer(engineItf, &pcmPlayObj, &slDataSource, &audioSink, PLAY_ITF_NUM, ids, req);
     if (SL_RESULT_SUCCESS != res) {
-        LOGE("engineItf CreateAudioPlayer fail code : %d", res);
+        LOGE("engineItf CreateAudioPlayer fail code : %d str : %s", res, ErrUtil::errLog(res));
         NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "engineItf CreateAudioPlayer fail");
         return false;
     }
@@ -197,5 +211,67 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     methodBufferCallBack(pcmBufQueueItf, this);
 
     //TODO[truyayong] 设置播放的初始状态 音量，声道，播放状态等
+    setVolume(PlaySession::getIns()->volume);
+    switchChannel(PlaySession::getIns()->channelLayout);
+    setPlayState(PlaySession::getIns()->playState);
     return true;
+}
+
+void AudioProccessor::setPlayState(int state) {
+    if (state == PLAY_STATE_STOPPED) {
+        (*pcmPlayItf)->SetPlayState(pcmPlayItf, SL_PLAYSTATE_STOPPED);
+    } else if (state == PLAY_STATE_PAUSED) {
+        (*pcmPlayItf)->SetPlayState(pcmPlayItf, SL_PLAYSTATE_PAUSED);
+    } else if (state == PLAY_STATE_PLAYING) {
+        (*pcmPlayItf)->SetPlayState(pcmPlayItf, SL_PLAYSTATE_PLAYING);
+    }
+}
+
+int AudioProccessor::adapterSLSampleRate(int sampleRate) {
+    int rate = 0;
+    switch (sampleRate)
+    {
+        case 8000:
+            rate = SL_SAMPLINGRATE_8;
+            break;
+        case 11025:
+            rate = SL_SAMPLINGRATE_11_025;
+            break;
+        case 12000:
+            rate = SL_SAMPLINGRATE_12;
+            break;
+        case 16000:
+            rate = SL_SAMPLINGRATE_16;
+            break;
+        case 22050:
+            rate = SL_SAMPLINGRATE_22_05;
+            break;
+        case 24000:
+            rate = SL_SAMPLINGRATE_24;
+            break;
+        case 32000:
+            rate = SL_SAMPLINGRATE_32;
+            break;
+        case 44100:
+            rate = SL_SAMPLINGRATE_44_1;
+            break;
+        case 48000:
+            rate = SL_SAMPLINGRATE_48;
+            break;
+        case 64000:
+            rate = SL_SAMPLINGRATE_64;
+            break;
+        case 88200:
+            rate = SL_SAMPLINGRATE_88_2;
+            break;
+        case 96000:
+            rate = SL_SAMPLINGRATE_96;
+            break;
+        case 192000:
+            rate = SL_SAMPLINGRATE_192;
+            break;
+        default:
+            rate =  SL_SAMPLINGRATE_44_1;
+    }
+    return rate;
 }
