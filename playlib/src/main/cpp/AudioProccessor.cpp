@@ -61,7 +61,9 @@ void AudioProccessor::stop() {
 }
 
 void AudioProccessor::seek(int64_t second) {
-
+    if (NULL != pAudioCoder) {
+        pAudioCoder->seek(second);
+    }
 }
 
 void AudioProccessor::setVolume(int percent) {

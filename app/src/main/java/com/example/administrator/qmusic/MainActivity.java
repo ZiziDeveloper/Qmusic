@@ -15,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
     PlayJniProxy mPlayJniProxy;
     private String playUrl = "http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3";
     private SeekBar mVolumeBar;
+    private SeekBar mTimeBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +29,23 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mPlayJniProxy.setVolume(progress);
                 Log.i(TAG, "mVolumeBar progress : " + progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        mTimeBar = (SeekBar) findViewById(R.id.seek_time);
+        mTimeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mPlayJniProxy.seek(progress);
             }
 
             @Override

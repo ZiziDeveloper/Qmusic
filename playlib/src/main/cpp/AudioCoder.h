@@ -44,6 +44,7 @@ public:
     int reSampleAudio(void **pcmBuf);
     int getSampleRate();
     void stop();
+    void seek(int64_t second);
 
 };
 

@@ -60,6 +60,8 @@ void AudioCoder::prepareDecoder() {
         if (pAVFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             mStreamIndex = i;
             pCodecPara = pAVFormatCtx->streams[i]->codecpar;
+            PlaySession::getIns()->duration = pAVFormatCtx->duration / AV_TIME_BASE;
+            PlaySession::getIns()->timeBase = pAVFormatCtx->streams[i]->time_base;
         }
     }
 
@@ -230,6 +232,7 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
             int outChannels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
             dataSize = sampleNum * outChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
+
             av_frame_free(&avFrame);
             av_free(avFrame);
             avFrame = NULL;
@@ -252,5 +255,21 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
 void AudioCoder::stop() {
     if (NULL != pQueue) {
         pQueue->clearQueue();
+    }
+}
+
+void AudioCoder::seek(int64_t second) {
+    if (PlaySession::getIns()->duration < 0) {
+        return;
+    }
+    if (second >= 0 && second <= PlaySession::getIns()->duration) {
+        PlaySession::getIns()->bSeeking = true;
+        if (NULL != pQueue) {
+            pQueue->clearQueue();
+        }
+        int64_t rel = second * AV_TIME_BASE;
+        avcodec_flush_buffers(pAVCodecCtx);
+        avformat_seek_file(pAVFormatCtx, -1, INT64_MIN, rel, INT64_MAX, 0);
+        PlaySession::getIns()->bSeeking = false;
     }
 }

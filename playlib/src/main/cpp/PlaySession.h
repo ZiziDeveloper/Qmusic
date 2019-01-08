@@ -5,6 +5,8 @@
 #ifndef QMUSIC_PLAYSESSION_H
 #define QMUSIC_PLAYSESSION_H
 
+#include <libavutil/rational.h>
+
 /**
  * 存储播放会话的状态
  */
@@ -29,6 +31,9 @@ public:
     int channelLayout = 2;
     //播放器输出采样率
     int outSmapleRate = 44100;
+    //音频时长
+    int64_t duration = 0;
+    AVRational timeBase;
 public:
     static PlaySession* getIns();
 

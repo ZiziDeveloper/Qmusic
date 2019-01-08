@@ -73,9 +73,9 @@ Java_com_example_playlib_PlayJniProxy_native_1stop(JNIEnv *env, jobject instance
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1seek(JNIEnv *env, jobject instance, jint progress) {
-
-    // TODO
-
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->seek(progress);
+    }
 }
 
 extern "C"
