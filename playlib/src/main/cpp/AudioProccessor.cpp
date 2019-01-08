@@ -132,13 +132,11 @@ bool AudioProccessor::prepareSLOutputMixAndPlay() {
 }
 
 void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
-    LOGE("[truyayong] methodBufferCallBack enter");
     AudioProccessor *pPlayer = (AudioProccessor*) context;
     if (pPlayer != NULL) {
         int dataSize = pPlayer->pAudioCoder->reSampleAudio((void **) &pPlayer->pOutBuf);
-        LOGE("[truyayong] dataSize : %d ", dataSize);
         (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->pOutBuf
-                , dataSize * 2 * 2);
+                , dataSize);
     }
 }
 

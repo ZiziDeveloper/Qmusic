@@ -99,13 +99,13 @@ void AudioCoder::prepareDecoder() {
 
 void AudioCoder::start() {
     int count = 0;
-    LOGE("AudioCoder::start enter");
+    LOGI("AudioCoder::start enter");
     while (!PlaySession::getIns()->bExit) {
         if (PlaySession::getIns()->bSeeking) {
             av_usleep(1000 * 100);
             continue;
         }
-        if (pQueue->size() > 40) {
+        if (pQueue->size() > 10000) {
             av_usleep(1000 * 100);
             continue;
         }
@@ -142,22 +142,18 @@ int AudioCoder::getSampleRate() {
 }
 
 int AudioCoder::reSampleAudio(void **pcmBuf) {
-    LOGE("[truyayong] enter reSampleAudio");
     int ret;
     int dataSize = 0;
     bool bReadFrameOver = true;
     AVPacket* avPacket = NULL;
     AVFrame* avFrame = NULL;
     while (!PlaySession::getIns()->bExit) {
-        LOGE("[truyayong] enter reSampleAudio while");
         if (PlaySession::getIns()->bSeeking) {
             av_usleep(1000 * 100);
             continue;
         }
-        LOGE("[truyayong]1 enter reSampleAudio while");
 
         if (pQueue->size() == 0) {
-            LOGE("[truyayong]2 enter reSampleAudio while");
             if (!PlaySession::getIns()->bLoading) {
                 PlaySession::getIns()->bLoading = true;
                 NotifyApplication::getIns()->notifyLoad(true);
@@ -165,7 +161,6 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
             av_usleep(1000 * 100);
             continue;
         } else {
-            LOGE("[truyayong]3 enter reSampleAudio while");
             if (PlaySession::getIns()->bLoading) {
                 PlaySession::getIns()->bLoading = false;
                 NotifyApplication::getIns()->notifyLoad(false);
@@ -173,7 +168,6 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
         }
 
         if (bReadFrameOver) {
-            LOGE("[truyayong]4 enter reSampleAudio while");
             avPacket = av_packet_alloc();
             if (pQueue->getAvPacket(avPacket) != 0) {
                 av_packet_free(&avPacket);
@@ -182,7 +176,6 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
                 continue;
             }
             ret = avcodec_send_packet(pAVCodecCtx, avPacket);
-            LOGE("[truyayong]5 enter reSampleAudio while");
             if (ret != 0) {
                 LOGE("avcodec_send_packet err: %s", ErrUtil::errLog(ret));
                 av_packet_free(&avPacket);
@@ -193,7 +186,6 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
         }
         avFrame = av_frame_alloc();
         ret = avcodec_receive_frame(pAVCodecCtx, avFrame);
-        LOGE("[truyayong]6 enter reSampleAudio while");
         if (ret == 0) {
             bReadFrameOver = false;
             if (avFrame->channels > 0 && avFrame->channel_layout == 0) {
@@ -223,7 +215,6 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
                 bReadFrameOver = true;
                 continue;
             }
-            LOGE("[truyayong]7 enter reSampleAudio while");
 
             sampleNum = swr_convert(
                     pSwrCtx, &buffer,
@@ -231,10 +222,8 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
                     (const uint8_t **)avFrame->data,
                     avFrame->nb_samples);
             *pcmBuf = buffer;
-            LOGE("[truyayong]7.5 enter reSampleAudio while ");
             int outChannels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
             dataSize = sampleNum * outChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
-            LOGE("[truyayong]8 enter reSampleAudio while");
 
             av_frame_free(&avFrame);
             av_free(avFrame);
