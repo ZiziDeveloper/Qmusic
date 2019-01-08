@@ -21,6 +21,10 @@ public class PlayJniProxy {
         System.loadLibrary("avdevice-57");
     }
 
+    public static final int PLAY_CHANNEL_RIGHT = 0;
+    public static final int PLAY_CHANNEL_LEFT = 1;
+    public static final int PLAY_CHANNEL_STEREO = 2;
+
     /**
      *暴露给java层的api
      *
@@ -59,6 +63,9 @@ public class PlayJniProxy {
     }
 
     public void setVolume(int percent) {
+        if (percent < 0 || percent > 100) {
+            return;
+        }
         native_volume(percent);
     }
 

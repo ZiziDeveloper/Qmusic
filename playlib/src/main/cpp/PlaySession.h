@@ -11,6 +11,10 @@
 const int PLAY_STATE_STOPPED = 1;
 const int PLAY_STATE_PAUSED = 2;
 const int PLAY_STATE_PLAYING = 3;
+
+const int PLAY_CHANNEL_RIGHT = 0;
+const int PLAY_CHANNEL_LEFT = 1;
+const int PLAY_CHANNEL_STEREO = 2;
 class PlaySession {
 private:
     PlaySession();
@@ -20,7 +24,7 @@ public:
     bool bExit = false;
     bool bSeeking = false;
     bool bLoading = true;
-    int volume = 70;
+    int volume = 50;
     int playState = PLAY_STATE_PLAYING;
     int channelLayout = 2;
     //播放器输出采样率

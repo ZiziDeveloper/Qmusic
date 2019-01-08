@@ -49,25 +49,25 @@ Java_com_example_playlib_PlayJniProxy_native_1start(JNIEnv *env, jobject instanc
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1resume(JNIEnv *env, jobject instance) {
-
-    // TODO
-
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->resume();
+    }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1pause(JNIEnv *env, jobject instance) {
-
-    // TODO
-
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->pause();
+    }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1stop(JNIEnv *env, jobject instance) {
-
-    // TODO
-
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->stop();
+    }
 }
 
 extern "C"
@@ -89,9 +89,9 @@ Java_com_example_playlib_PlayJniProxy_native_1duration(JNIEnv *env, jobject inst
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1volume(JNIEnv *env, jobject instance, jint percent) {
-
-    // TODO
-
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->setVolume(percent);
+    }
 }
 
 extern "C"
@@ -122,7 +122,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1channel_1switch(JNIEnv *env, jobject instance,
                                                              jint channel) {
-
-    // TODO
-
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->switchChannel(channel);
+    }
 }

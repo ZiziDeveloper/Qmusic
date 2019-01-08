@@ -12,6 +12,11 @@ AudioCoder::AudioCoder() {
 }
 
 AudioCoder::~AudioCoder() {
+    pQueue->clearQueue();
+    if (NULL != buffer) {
+        av_free(buffer);
+        buffer = NULL;
+    }
     pthread_mutex_destroy(&prepareDecodeMutex);
 }
 
@@ -242,4 +247,10 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
         }
     }
     return dataSize;
+}
+
+void AudioCoder::stop() {
+    if (NULL != pQueue) {
+        pQueue->clearQueue();
+    }
 }

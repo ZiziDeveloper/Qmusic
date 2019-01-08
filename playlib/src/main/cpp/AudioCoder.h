@@ -43,6 +43,7 @@ public:
     //音频重采样
     int reSampleAudio(void **pcmBuf);
     int getSampleRate();
+    void stop();
 
 };
 

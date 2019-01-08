@@ -51,6 +51,8 @@ public:
 private:
     void setPlayState(int state);
     int adapterSLSampleRate(int rate);
+    //释放OpenSL
+    void releaseSL();
 public:
     AudioProccessor();
     virtual ~AudioProccessor();

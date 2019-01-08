@@ -9,7 +9,7 @@ AudioProccessor::AudioProccessor() {
 }
 
 AudioProccessor::~AudioProccessor() {
-
+    delete pAudioCoder;
 }
 
 void AudioProccessor::prepare() {
@@ -34,20 +34,30 @@ void* startDecodeRunnable(void* data) {
 }
 
 void AudioProccessor::start() {
+    PlaySession::getIns()->bExit = false;
+    PlaySession::getIns()->playState = PLAY_STATE_PLAYING;
     pthread_create(&startDecodeThread, NULL, startDecodeRunnable, this);
     pthread_create(&startPlayThread,NULL, startPlayRunnable, this);
 }
 
 void AudioProccessor::pause() {
-
+    PlaySession::getIns()->playState = PLAY_STATE_PAUSED;
+    setPlayState(PlaySession::getIns()->playState);
 }
 
 void AudioProccessor::resume() {
-
+    PlaySession::getIns()->playState = PLAY_STATE_PLAYING;
+    setPlayState(PlaySession::getIns()->playState);
 }
 
 void AudioProccessor::stop() {
-
+    PlaySession::getIns()->bExit = true;
+    PlaySession::getIns()->playState = PLAY_STATE_STOPPED;
+    setPlayState(PlaySession::getIns()->playState);
+    if (NULL == pAudioCoder) {
+        pAudioCoder->stop();
+    }
+    releaseSL();
 }
 
 void AudioProccessor::seek(int64_t second) {
@@ -55,11 +65,61 @@ void AudioProccessor::seek(int64_t second) {
 }
 
 void AudioProccessor::setVolume(int percent) {
-
+    if (NULL == pcmVolumeItf) {
+        return;
+    }
+    PlaySession::getIns()->volume = percent;
+    if (percent > 30)
+    {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -20);
+    }
+    else if (percent > 25)
+    {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -22);
+    }
+    else if (percent > 20)
+    {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -25);
+    }
+    else if (percent > 15)
+    {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -28);
+    }
+    else if (percent > 10)
+    {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -30);
+    }
+    else if (percent > 5)
+    {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -34);
+    }
+    else if (percent > 3)
+    {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -37);
+    }
+    else if (percent > 0)
+    {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -40);
+    }
+    else {
+        (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -100);
+    }
 }
 
 void AudioProccessor::switchChannel(int channel) {
-
+    if (NULL == pcmMuteSoloItf) {
+        return;
+    }
+    if (channel == PLAY_CHANNEL_RIGHT) {//右声道
+        (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 1, false);
+        (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 0, true);
+    } else if (channel == PLAY_CHANNEL_LEFT) {//左声道
+        (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 1, true);
+        (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 0, false);
+    } else if (channel == PLAY_CHANNEL_STEREO) {//立体声
+        (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 1, false);
+        (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 0, false);
+    }
 }
 
 void AudioProccessor::setPitch(float pitch) {
@@ -216,6 +276,9 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
 }
 
 void AudioProccessor::setPlayState(int state) {
+    if (NULL == pcmPlayItf) {
+        return;
+    }
     if (state == PLAY_STATE_STOPPED) {
         (*pcmPlayItf)->SetPlayState(pcmPlayItf, SL_PLAYSTATE_STOPPED);
     } else if (state == PLAY_STATE_PAUSED) {
@@ -273,3 +336,30 @@ int AudioProccessor::adapterSLSampleRate(int sampleRate) {
     }
     return rate;
 }
+
+void AudioProccessor::releaseSL() {
+    if (NULL != pcmPlayObj) {
+        (*pcmPlayObj)->Destroy(pcmPlayObj);
+        pcmPlayObj = NULL;
+        pcmPlayItf = NULL;
+        pcmBufQueueItf = NULL;
+        pcmMuteSoloItf = NULL;
+        pcmVolumeItf = NULL;
+    }
+
+    if (NULL != outputMixObj) {
+        (*outputMixObj)->Destroy(outputMixObj);
+        outputMixObj = NULL;
+        outputMixEnvironmentalReverb = NULL;
+    }
+
+    if (NULL != engineObj) {
+        (*engineObj)->Destroy(engineObj);
+        engineItf = NULL;
+    }
+
+    if (NULL != pOutBuf) {
+        pOutBuf = NULL;
+    }
+}
+
