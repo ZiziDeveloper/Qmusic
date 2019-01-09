@@ -26,7 +26,7 @@ public:
     bool bExit = false;
     bool bSeeking = false;
     bool bLoading = true;
-    int volume = 50;
+    int volume = 85;
     int playState = PLAY_STATE_PLAYING;
     int channelLayout = 2;
     //播放器输出采样率

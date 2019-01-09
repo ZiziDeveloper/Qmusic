@@ -27,11 +27,13 @@ void *decodePrepareRunnable(void* data) {
 }
 
 void AudioCoder::prepare() {
+    LOGI("AudioCoder::prepare");
     pthread_create(&prepareDecodeThread
             , NULL, decodePrepareRunnable, this);
 }
 
 void AudioCoder::prepareDecoder() {
+    LOGI("AudioCoder::prepareDecoder");
     pthread_mutex_lock(&prepareDecodeMutex);
     av_register_all();
     avformat_network_init();
@@ -106,13 +108,13 @@ void AudioCoder::prepareDecoder() {
 
 void AudioCoder::start() {
     int count = 0;
-    LOGI("AudioCoder::start enter");
+    LOGI("AudioCoder::start");
     while (!PlaySession::getIns()->bExit) {
         if (PlaySession::getIns()->bSeeking) {
             av_usleep(1000 * 100);
             continue;
         }
-        if (pQueue->size() > 10000) {
+        if (pQueue->size() > PacketQueue::MAX_SIZE) {
             av_usleep(1000 * 100);
             continue;
         }
@@ -253,12 +255,14 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
 }
 
 void AudioCoder::stop() {
+    LOGI("AudioCoder::stop");
     if (NULL != pQueue) {
         pQueue->clearQueue();
     }
 }
 
 void AudioCoder::seek(int64_t second) {
+    LOGI("AudioCoder::seek second : %ld duration : %ld", second, PlaySession::getIns()->duration);
     if (PlaySession::getIns()->duration < 0) {
         return;
     }

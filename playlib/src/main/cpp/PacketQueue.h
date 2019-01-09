@@ -19,6 +19,9 @@ private:
     pthread_mutex_t mMutex;
     pthread_cond_t mCond;
 public:
+    //队列缓存不宜过大，如果过大，则网络文件就会一次缓存完,导致seek状态bug
+    static const int MAX_SIZE = 100;
+public:
     PacketQueue();
     virtual ~PacketQueue();
     int putAvPacket(AVPacket* packet);

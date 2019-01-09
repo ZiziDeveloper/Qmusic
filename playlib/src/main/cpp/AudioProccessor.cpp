@@ -13,6 +13,7 @@ AudioProccessor::~AudioProccessor() {
 }
 
 void AudioProccessor::prepare() {
+    LOGI("AudioProccessor::prepare");
     if (NULL != pAudioCoder) {
         pAudioCoder->prepare();
     }
@@ -34,6 +35,7 @@ void* startDecodeRunnable(void* data) {
 }
 
 void AudioProccessor::start() {
+    LOGI("AudioProccessor::start");
     PlaySession::getIns()->bExit = false;
     PlaySession::getIns()->playState = PLAY_STATE_PLAYING;
     pthread_create(&startDecodeThread, NULL, startDecodeRunnable, this);
@@ -41,16 +43,19 @@ void AudioProccessor::start() {
 }
 
 void AudioProccessor::pause() {
+    LOGI("AudioProccessor::pause");
     PlaySession::getIns()->playState = PLAY_STATE_PAUSED;
     setPlayState(PlaySession::getIns()->playState);
 }
 
 void AudioProccessor::resume() {
+    LOGI("AudioProccessor::resume");
     PlaySession::getIns()->playState = PLAY_STATE_PLAYING;
     setPlayState(PlaySession::getIns()->playState);
 }
 
 void AudioProccessor::stop() {
+    LOGI("AudioProccessor::stop");
     PlaySession::getIns()->bExit = true;
     PlaySession::getIns()->playState = PLAY_STATE_STOPPED;
     setPlayState(PlaySession::getIns()->playState);
@@ -67,6 +72,7 @@ void AudioProccessor::seek(int64_t second) {
 }
 
 void AudioProccessor::setVolume(int percent) {
+    LOGI("AudioProccessor::setVolume percent : %d", percent);
     if (NULL == pcmVolumeItf) {
         return;
     }
@@ -109,6 +115,7 @@ void AudioProccessor::setVolume(int percent) {
 }
 
 void AudioProccessor::switchChannel(int channel) {
+    LOGI("AudioProccessor::switchChannel");
     if (NULL == pcmMuteSoloItf) {
         return;
     }
@@ -195,7 +202,7 @@ bool AudioProccessor::prepareSLOutputMixAndPlay() {
 
 void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
     AudioProccessor *pPlayer = (AudioProccessor*) context;
-    if (pPlayer != NULL) {
+    if (NULL != pPlayer) {
         int dataSize = pPlayer->pAudioCoder->reSampleAudio((void **) &pPlayer->pOutBuf);
         (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->pOutBuf
                 , dataSize);
