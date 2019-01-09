@@ -204,6 +204,15 @@ void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
     AudioProccessor *pPlayer = (AudioProccessor*) context;
     if (NULL != pPlayer) {
         int dataSize = pPlayer->pAudioCoder->reSampleAudio((void **) &pPlayer->pOutBuf);
+        if (dataSize > 0) {
+            PlaySession::getIns()->currentClock += dataSize / (double)(PlaySession::getIns()->inSampleRate * 2 * 2);
+            if (PlaySession::getIns()->currentClock - PlaySession::getIns()->lastClock >= PlaySession::TIME_INTERVAL) {
+                PlaySession::getIns()->lastClock = PlaySession::getIns()->currentClock;
+                //TODO[truyayong] 回调到应用层
+                LOGE("[truyayong] current : %f, tol : %d", PlaySession::getIns()->currentClock
+                , PlaySession::getIns()->duration);
+            }
+        }
         (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->pOutBuf
                 , dataSize);
     }

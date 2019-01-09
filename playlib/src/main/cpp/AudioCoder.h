@@ -33,6 +33,12 @@ public:
     pthread_mutex_t prepareDecodeMutex;
     int sampleNum;
     uint8_t *buffer = NULL;
+private:
+    /**
+     * 计算当前播放时间
+     * @param time
+     */
+    void calcCurrentClock(double time);
 public:
     AudioCoder();
     virtual ~AudioCoder();

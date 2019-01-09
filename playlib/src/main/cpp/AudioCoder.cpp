@@ -64,6 +64,7 @@ void AudioCoder::prepareDecoder() {
             pCodecPara = pAVFormatCtx->streams[i]->codecpar;
             PlaySession::getIns()->duration = pAVFormatCtx->duration / AV_TIME_BASE;
             PlaySession::getIns()->timeBase = pAVFormatCtx->streams[i]->time_base;
+            PlaySession::getIns()->inSampleRate = pCodecPara->sample_rate;
         }
     }
 
@@ -234,6 +235,8 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
             int outChannels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
             dataSize = sampleNum * outChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
 
+            double time = avFrame->pts * av_q2d(PlaySession::getIns()->timeBase);
+            calcCurrentClock(time);
 
             av_frame_free(&avFrame);
             av_free(avFrame);
@@ -276,4 +279,11 @@ void AudioCoder::seek(int64_t second) {
         avformat_seek_file(pAVFormatCtx, -1, INT64_MIN, rel, INT64_MAX, 0);
         PlaySession::getIns()->bSeeking = false;
     }
+}
+
+void AudioCoder::calcCurrentClock(double time) {
+    if (time < PlaySession::getIns()->currentClock) {
+        time = PlaySession::getIns()->currentClock;
+    }
+    PlaySession::getIns()->currentClock = time;
 }
