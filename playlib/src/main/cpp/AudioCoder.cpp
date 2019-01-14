@@ -8,7 +8,6 @@
 AudioCoder::AudioCoder() {
     pthread_mutex_init(&prepareDecodeMutex, NULL);
     pQueue = new PacketQueue();
-    buffer = (uint8_t *) av_malloc(PlaySession::getIns()->outSmapleRate * 2 * 2);
 }
 
 AudioCoder::~AudioCoder() {
@@ -203,14 +202,16 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
             } else if (avFrame->channels == 0 && avFrame->channel_layout > 0) {
                 avFrame->channels = av_get_channel_layout_nb_channels(avFrame->channel_layout);
             }
+            PlaySession::getIns()->inChannelLayout = avFrame->channel_layout;
+            PlaySession::getIns()->inFmt = (AVSampleFormat)avFrame->format;
             SwrContext* pSwrCtx;
             pSwrCtx = swr_alloc_set_opts(
                     NULL,
                     AV_CH_LAYOUT_STEREO,
-                    AV_SAMPLE_FMT_S16,
+                    PlaySession::getIns()->outFmt,
                     avFrame->sample_rate,
-                    avFrame->channel_layout,
-                    (AVSampleFormat)avFrame->format,
+                    PlaySession::getIns()->inChannelLayout,
+                    PlaySession::getIns()->inFmt,
                     avFrame->sample_rate,
                     NULL, NULL
             );
@@ -226,14 +227,19 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
                 continue;
             }
 
-            sampleNum = swr_convert(
+            if (NULL == buffer) {
+                buffer = (uint8_t*) av_malloc(PlaySession::getIns()->inSampleRate
+                                              * PlaySession::getIns()->getInChannelLayoutBytes()
+                                              * av_get_bytes_per_sample(PlaySession::getIns()->outFmt));
+            }
+            PlaySession::getIns()->numSampleAvFrame = swr_convert(
                     pSwrCtx, &buffer,
                     avFrame->nb_samples,
                     (const uint8_t **)avFrame->data,
                     avFrame->nb_samples);
             *pcmBuf = buffer;
             int outChannels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
-            dataSize = sampleNum * outChannels * av_get_bytes_per_sample(AV_SAMPLE_FMT_S16);
+            dataSize = PlaySession::getIns()->numSampleAvFrame * outChannels * av_get_bytes_per_sample(PlaySession::getIns()->outFmt);
 
             double time = avFrame->pts * av_q2d(PlaySession::getIns()->timeBase);
             calcCurrentClock(time);

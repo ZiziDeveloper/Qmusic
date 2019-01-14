@@ -31,7 +31,7 @@ private:
 public:
     pthread_t prepareDecodeThread;
     pthread_mutex_t prepareDecodeMutex;
-    int sampleNum;
+    //buffer申请1s的样本数，一般来说一个AVFrame包含的样本数都会小于1s的数量
     uint8_t *buffer = NULL;
 private:
     /**

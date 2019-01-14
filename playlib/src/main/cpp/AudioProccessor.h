@@ -13,12 +13,12 @@
 #include <stdint.h>
 #include "AndroidLog.h"
 #include "NotifyApplication.h"
-
+#include "SoundTouch.h"
 extern "C" {
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 };
-
+using namespace soundtouch;
 /**
  * 音频处理层，负责播放音频与调度AudioCoder解码
  */
@@ -39,14 +39,19 @@ private:
     SLVolumeItf pcmVolumeItf = NULL;
     SLMuteSoloItf  pcmMuteSoloItf = NULL;
 
+
 public:
     AudioCoder *pAudioCoder;
     //开始播放线程
     pthread_t startPlayThread;
     pthread_t startDecodeThread;
+    pthread_mutex_t adapterPcmMutex;
     //播放缓冲队列
     SLAndroidSimpleBufferQueueItf  pcmBufQueueItf = NULL;
     uint8_t *pOutBuf = NULL;
+
+    SoundTouch* soundTouch = NULL;
+    SAMPLETYPE* soundTouchBuffer = NULL;
 
 private:
     void setPlayState(int state);
@@ -64,7 +69,7 @@ public:
     void stop();
     void seek(int64_t second);
     void setVolume(int percent);
-    void switchChannel(int channel);
+    void switchChannel(int64_t channel);
     void setPitch(float pitch);
     void setSpeed(float speed);
 
@@ -74,6 +79,8 @@ public:
     bool prepareSLOutputMixAndPlay();
     //创建播放器
     bool prepareSLPlay(SLDataSink& audioSink);
+
+    int adapterPcmToSoundTouch();
 
 };
 

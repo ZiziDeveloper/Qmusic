@@ -97,17 +97,17 @@ Java_com_example_playlib_PlayJniProxy_native_1volume(JNIEnv *env, jobject instan
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1pitch(JNIEnv *env, jobject instance, jfloat pitch) {
-
-    // TODO
-
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->setPitch(pitch);
+    }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1speed(JNIEnv *env, jobject instance, jfloat speed) {
-
-    // TODO
-
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->setSpeed(speed);
+    }
 }
 
 extern "C"

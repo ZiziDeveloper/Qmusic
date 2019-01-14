@@ -91,4 +91,17 @@ public class MainActivity extends AppCompatActivity {
     public void onRight(View view) {
         mPlayJniProxy.switchChannel(PlayJniProxy.PLAY_CHANNEL_RIGHT);
     }
+
+    public void onPitch(View view) {
+        mPlayJniProxy.setPitch(2.0f);
+    }
+
+    public void onNormal(View view) {
+        mPlayJniProxy.setPitch(1.0f);
+        mPlayJniProxy.setSpeed(1.0f);
+    }
+
+    public void onSpeed(View view) {
+        mPlayJniProxy.setSpeed(2.0f);
+    }
 }

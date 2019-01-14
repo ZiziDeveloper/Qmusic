@@ -6,10 +6,20 @@
 
 AudioProccessor::AudioProccessor() {
     pAudioCoder = new AudioCoder();
+    soundTouch = new SoundTouch();
+    soundTouch->setSampleRate(PlaySession::getIns()->outSmapleRate);
+    soundTouch->setChannels(PlaySession::getIns()->getoutChannelLayoutBytes());
+    soundTouch->setPitch(1.0f);
+    soundTouch->setTempo(2.0f);
+    soundTouchBuffer = (SAMPLETYPE*) av_malloc(
+            PlaySession::getIns()->outSmapleRate
+            * PlaySession::getIns()->getoutChannelLayoutBytes() * av_get_bytes_per_sample(PlaySession::getIns()->outFmt));
+    pthread_mutex_init(&adapterPcmMutex, NULL);
 }
 
 AudioProccessor::~AudioProccessor() {
     delete pAudioCoder;
+    pthread_mutex_destroy(&adapterPcmMutex);
 }
 
 void AudioProccessor::prepare() {
@@ -114,7 +124,7 @@ void AudioProccessor::setVolume(int percent) {
     }
 }
 
-void AudioProccessor::switchChannel(int channel) {
+void AudioProccessor::switchChannel(int64_t channel) {
     LOGI("AudioProccessor::switchChannel");
     if (NULL == pcmMuteSoloItf) {
         return;
@@ -132,11 +142,17 @@ void AudioProccessor::switchChannel(int channel) {
 }
 
 void AudioProccessor::setPitch(float pitch) {
-
+    if (NULL != soundTouch) {
+        PlaySession::getIns()->pitch = pitch;
+        soundTouch->setPitch(PlaySession::getIns()->pitch);
+    }
 }
 
 void AudioProccessor::setSpeed(float speed) {
-
+    if (NULL != soundTouch) {
+        PlaySession::getIns()->speed = speed;
+        soundTouch->setTempo(PlaySession::getIns()->speed);
+    }
 }
 
 bool AudioProccessor::prepareSLEngien() {
@@ -203,9 +219,9 @@ bool AudioProccessor::prepareSLOutputMixAndPlay() {
 void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
     AudioProccessor *pPlayer = (AudioProccessor*) context;
     if (NULL != pPlayer) {
-        int dataSize = pPlayer->pAudioCoder->reSampleAudio((void **) &pPlayer->pOutBuf);
-        if (dataSize > 0) {
-            PlaySession::getIns()->currentClock += dataSize / (double)(PlaySession::getIns()->inSampleRate * 2 * 2);
+        int soundTouchReceiveNum = pPlayer->adapterPcmToSoundTouch();
+        if (soundTouchReceiveNum > 0) {
+            PlaySession::getIns()->currentClock += soundTouchReceiveNum / (double)(PlaySession::getIns()->inSampleRate * 2 * 2);
             if (PlaySession::getIns()->currentClock - PlaySession::getIns()->lastClock >= PlaySession::TIME_INTERVAL) {
                 PlaySession::getIns()->lastClock = PlaySession::getIns()->currentClock;
                 //TODO[truyayong] 回调到应用层
@@ -213,9 +229,55 @@ void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
                 , PlaySession::getIns()->duration);
             }
         }
-        (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->pOutBuf
-                , dataSize);
+        (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->soundTouchBuffer
+                , soundTouchReceiveNum * (PlaySession::getIns()->getoutChannelLayoutBytes()
+                                          * av_get_bytes_per_sample(PlaySession::getIns()->outFmt)));
     }
+}
+
+int AudioProccessor::adapterPcmToSoundTouch() {
+    pthread_mutex_lock(&adapterPcmMutex);
+    bool finished = true;
+    int pcmSize = 0;
+    int receiveNum;
+    while(!PlaySession::getIns()->bExit) {
+        pOutBuf = NULL;
+        if (finished) {
+            pcmSize = pAudioCoder->reSampleAudio((void **)&pOutBuf);
+            if (pcmSize > 0) {
+                for (int i = 0; i < pcmSize / 2 + 1; i++) {
+                    int o = i;
+                    soundTouchBuffer[i] = (pOutBuf[i * 2] | ((pOutBuf[i * 2 + 1]) << 8));
+                }
+                soundTouch->putSamples(soundTouchBuffer, PlaySession::getIns()->numSampleAvFrame);
+                receiveNum = soundTouch->receiveSamples(
+                        soundTouchBuffer, pcmSize / (PlaySession::getIns()->getoutChannelLayoutBytes()
+                                                     * av_get_bytes_per_sample(PlaySession::getIns()->outFmt)));
+            } else {
+                soundTouch->flush();
+            }
+
+            if (receiveNum == 0) {
+                finished = true;
+                continue;
+            } else {
+                if (NULL == pOutBuf) {
+                    receiveNum = soundTouch->receiveSamples(
+                            soundTouchBuffer, pcmSize / (PlaySession::getIns()->getoutChannelLayoutBytes()
+                                                         * av_get_bytes_per_sample(PlaySession::getIns()->outFmt)));
+                    if (receiveNum == 0) {
+                        finished = true;
+                        continue;
+                    }
+                }
+                pthread_mutex_unlock(&adapterPcmMutex);
+                return receiveNum;
+            }
+        }
+
+    }
+    pthread_mutex_unlock(&adapterPcmMutex);
+    return 0;
 }
 
 bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
@@ -288,7 +350,7 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
 
     //TODO[truyayong] 设置播放的初始状态 音量，声道，播放状态等
     setVolume(PlaySession::getIns()->volume);
-    switchChannel(PlaySession::getIns()->channelLayout);
+    switchChannel(PlaySession::getIns()->outChannelLayout);
     setPlayState(PlaySession::getIns()->playState);
     return true;
 }
@@ -380,4 +442,5 @@ void AudioProccessor::releaseSL() {
         pOutBuf = NULL;
     }
 }
+
 

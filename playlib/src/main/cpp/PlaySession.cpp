@@ -21,3 +21,27 @@ char *PlaySession::getUrl() const {
 void PlaySession::setUrl(char *pUrl) {
     PlaySession::pUrl = pUrl;
 }
+
+int PlaySession::getInChannelLayoutBytes() {
+    int bytes = 0;
+    if (inChannelLayout == PLAY_CHANNEL_RIGHT) {//右声道
+        bytes = 1;
+    } else if (inChannelLayout == PLAY_CHANNEL_LEFT) {//左声道
+        bytes = 1;
+    } else if (inChannelLayout == PLAY_CHANNEL_STEREO) {//立体声
+        bytes = 2;
+    }
+    return bytes;
+}
+
+int PlaySession::getoutChannelLayoutBytes() {
+    int bytes = 0;
+    if (outChannelLayout == PLAY_CHANNEL_RIGHT) {//右声道
+        bytes = 1;
+    } else if (outChannelLayout == PLAY_CHANNEL_LEFT) {//左声道
+        bytes = 1;
+    } else if (outChannelLayout == PLAY_CHANNEL_STEREO) {//立体声
+        bytes = 2;
+    }
+    return bytes;
+}
