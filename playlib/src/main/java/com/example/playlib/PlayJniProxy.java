@@ -9,6 +9,11 @@ import android.util.Log;
 public class PlayJniProxy {
     private static final String TAG = "PlayJniProxy";
 
+    public static final int NOT_PLAY_NEXT = 0;
+    public static final int PLAY_NEXT = 1;
+
+    private String mSource = "";
+
     static {
         System.loadLibrary("PlayNative");
         System.loadLibrary("avutil-55");
@@ -25,21 +30,27 @@ public class PlayJniProxy {
     public static final int PLAY_CHANNEL_LEFT = 1;
     public static final int PLAY_CHANNEL_STEREO = 2;
 
-    /**
+    /************************************************************************************************************************
      *暴露给java层的api
      *
      */
     public void prepare(final String source, final int volume, final int playState, final int mutesole) {
+        mSource = source;
         new Thread(new Runnable() {
             @Override
             public void run() {
-                native_prepare(source, volume, playState,mutesole );
+                native_prepare(mSource, volume, playState,mutesole );
             }
         }).start();
     }
 
     public void start() {
         native_start();
+    }
+
+    public void next(String source) {
+        mSource = source;
+        stop(PLAY_NEXT);
     }
 
     public void resume() {
@@ -50,8 +61,8 @@ public class PlayJniProxy {
         native_pause();
     }
 
-    public void stop() {
-        native_stop();
+    public void stop(final int bNext) {
+        native_stop(bNext);
     }
 
     public void seek(int progress) {
@@ -85,14 +96,19 @@ public class PlayJniProxy {
         return native_samplerate();
     }
 
-    /**
+    /************************************************************************************************************************
      * native方法
      */
     private native void native_prepare(String source, int volume, int playState, int mutesole);
     private native void native_start();
     private native void native_resume();
     private native void native_pause();
-    private native void native_stop();
+
+    /**
+     *
+     * @param bNext 是否停止，播放下一首
+     */
+    private native void native_stop(int bNext);
     private native void native_seek(int progress);
     private native int native_duration();
     private native void native_volume(int percent);
@@ -101,7 +117,7 @@ public class PlayJniProxy {
     private native void native_speed(float speed);
     private native int native_samplerate();
 
-    /**
+    /************************************************************************************************************************
      * native层通知应用层接口
      */
     private void onPrepared() {
@@ -109,5 +125,13 @@ public class PlayJniProxy {
     }
     private void onError(int code, String msg) {
         Log.e(TAG, "qmusic onError");
+    }
+
+    /**
+     * native通知可以播放下一首
+     */
+    private void onPlayNext() {
+        Log.e(TAG, "qmusic onPlayNext");
+        prepare(mSource, 0, 0,0);
     }
 }

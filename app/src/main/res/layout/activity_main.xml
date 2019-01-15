@@ -7,40 +7,53 @@
     android:orientation="vertical"
     tools:context="com.example.administrator.qmusic.MainActivity">
 
-    <TextView
-        android:id="@+id/sample_text"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="prepare"
-        android:onClick="onPrepare"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="start"
-        android:onClick="onStart" />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="pause"
-        android:onClick="onPause" />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="resume"
-        android:onClick="onResume" />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="stop"
-        android:onClick="onStop" />
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:textSize="8dp"
+            android:text="prepare"
+            android:onClick="onPrepare"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:textSize="8dp"
+            android:text="start"
+            android:onClick="onStart" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:textSize="8dp"
+            android:text="Next"
+            android:onClick="onNext" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:textSize="8dp"
+            android:text="pause"
+            android:onClick="onPause" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:textSize="8dp"
+            android:text="resume"
+            android:onClick="onResume" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:textSize="8dp"
+            android:text="stop"
+            android:onClick="onStop" />
+    </LinearLayout>
     <SeekBar
         android:id="@+id/seek_volume"
         android:layout_width="match_parent"

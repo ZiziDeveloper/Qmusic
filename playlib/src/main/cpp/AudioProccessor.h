@@ -58,6 +58,11 @@ private:
     int adapterSLSampleRate(int rate);
     //释放OpenSL
     void releaseSL();
+
+    //申请SoundTouch资源
+    void allocSoundTouch();
+    //释放SoundTouch资源
+    void freeSoundTouch();
 public:
     AudioProccessor();
     virtual ~AudioProccessor();

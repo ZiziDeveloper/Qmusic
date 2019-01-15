@@ -61,12 +61,16 @@ Java_com_example_playlib_PlayJniProxy_native_1pause(JNIEnv *env, jobject instanc
         pAudioProccessor->pause();
     }
 }
-
+const int NOT_PLAY_NEXT = 0;
+const int PLAY_NEXT = 1;
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1stop(JNIEnv *env, jobject instance) {
+Java_com_example_playlib_PlayJniProxy_native_1stop(JNIEnv *env, jobject instance, jint bNext) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->stop();
+        if (PLAY_NEXT == bNext) {
+            NotifyApplication::getIns()->notifyPlayNext(MAIN_THREAD);
+        }
     }
 }
 

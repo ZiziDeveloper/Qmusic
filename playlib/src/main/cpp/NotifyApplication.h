@@ -25,6 +25,7 @@ private:
     jobject jobj;
     jmethodID jmid_prepare;
     jmethodID jmid_error;
+    jmethodID jmid_playnext;
 private:
     NotifyApplication();
 public:
@@ -34,6 +35,7 @@ public:
     void notifyPrepared(int type);
     void notifyLoad(bool load);
     void notifyComplete();
+    void notifyPlayNext(int type);
 };
 
 

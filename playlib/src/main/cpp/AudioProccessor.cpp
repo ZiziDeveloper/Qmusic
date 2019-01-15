@@ -6,14 +6,6 @@
 
 AudioProccessor::AudioProccessor() {
     pAudioCoder = new AudioCoder();
-    soundTouch = new SoundTouch();
-    soundTouch->setSampleRate(PlaySession::getIns()->outSmapleRate);
-    soundTouch->setChannels(PlaySession::getIns()->getoutChannelLayoutBytes());
-    soundTouch->setPitch(1.0f);
-    soundTouch->setTempo(2.0f);
-    soundTouchBuffer = (SAMPLETYPE*) av_malloc(
-            PlaySession::getIns()->outSmapleRate
-            * PlaySession::getIns()->getoutChannelLayoutBytes() * av_get_bytes_per_sample(PlaySession::getIns()->outFmt));
     pthread_mutex_init(&adapterPcmMutex, NULL);
 }
 
@@ -46,6 +38,8 @@ void* startDecodeRunnable(void* data) {
 
 void AudioProccessor::start() {
     LOGI("AudioProccessor::start");
+
+    allocSoundTouch();
     PlaySession::getIns()->bExit = false;
     PlaySession::getIns()->playState = PLAY_STATE_PLAYING;
     pthread_create(&startDecodeThread, NULL, startDecodeRunnable, this);
@@ -73,6 +67,7 @@ void AudioProccessor::stop() {
         pAudioCoder->stop();
     }
     releaseSL();
+    freeSoundTouch();
 }
 
 void AudioProccessor::seek(int64_t second) {
@@ -440,6 +435,28 @@ void AudioProccessor::releaseSL() {
 
     if (NULL != pOutBuf) {
         pOutBuf = NULL;
+    }
+}
+
+void AudioProccessor::allocSoundTouch() {
+    soundTouch = new SoundTouch();
+    soundTouch->setSampleRate(PlaySession::getIns()->outSmapleRate);
+    soundTouch->setChannels(PlaySession::getIns()->getoutChannelLayoutBytes());
+    soundTouch->setPitch(PlaySession::getIns()->pitch);
+    soundTouch->setTempo(PlaySession::getIns()->speed);
+    soundTouchBuffer = (SAMPLETYPE*) av_malloc(
+            PlaySession::getIns()->outSmapleRate
+            * PlaySession::getIns()->getoutChannelLayoutBytes() * av_get_bytes_per_sample(PlaySession::getIns()->outFmt));
+}
+
+void AudioProccessor::freeSoundTouch() {
+    if (NULL != soundTouch) {
+        delete  soundTouch;
+        soundTouch = NULL;
+    }
+    if (NULL != soundTouchBuffer) {
+        av_free(soundTouchBuffer);
+        soundTouchBuffer = NULL;
     }
 }
 

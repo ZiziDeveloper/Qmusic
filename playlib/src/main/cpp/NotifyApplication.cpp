@@ -27,6 +27,8 @@ void NotifyApplication::init(_JavaVM *jvm, JNIEnv *jenv, jobject *pObj) {
     this->jmid_error = jenv->GetMethodID(jlz
             , "onError", "(ILjava/lang/String;)V");
     this->jmid_prepare = jenv->GetMethodID(jlz, "onPrepared", "()V");
+    LOGE("truyayong init onPlayNext");
+    this->jmid_playnext = jenv->GetMethodID(jlz, "onPlayNext", "()V");
 }
 
 void NotifyApplication::notifyError(int type, int code, const char *msg) {
@@ -67,4 +69,21 @@ void NotifyApplication::notifyLoad(bool load) {
 
 void NotifyApplication::notifyComplete() {
 
+}
+
+void NotifyApplication::notifyPlayNext(int type) {
+
+    if (MAIN_THREAD == type) {
+        LOGE("truyayong enter onPlayNext");
+        jenv->CallVoidMethod(jobj, jmid_playnext);
+        LOGE("truyayong end onPlayNext");
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifyPlayNext get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_playnext);
+        jvm->DetachCurrentThread();
+    }
 }

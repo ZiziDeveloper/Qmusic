@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
 
     PlayJniProxy mPlayJniProxy;
     private String playUrl = "http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3";
+    private String nextUrl = "http://ngcdn004.cnr.cn/live/dszs/index.m3u8";
     private SeekBar mVolumeBar;
     private SeekBar mTimeBar;
     @Override
@@ -21,8 +22,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mPlayJniProxy = new PlayJniProxy();
-        // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
         mVolumeBar = (SeekBar) findViewById(R.id.seek_volume);
         mVolumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -61,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onPrepare(View view) {
-        mPlayJniProxy.prepare(playUrl, 0, 0, 0);
+        mPlayJniProxy.prepare(nextUrl, 0, 0, 0);
     }
 
     public void onStart(View view) {
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onStop(View view) {
-        mPlayJniProxy.stop();
+        mPlayJniProxy.stop(PlayJniProxy.NOT_PLAY_NEXT);
     }
 
     public void onLeft(View view) {
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onPitch(View view) {
-        mPlayJniProxy.setPitch(2.0f);
+        mPlayJniProxy.setPitch(1.5f);
     }
 
     public void onNormal(View view) {
@@ -102,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSpeed(View view) {
-        mPlayJniProxy.setSpeed(2.0f);
+        mPlayJniProxy.setSpeed(1.5f);
+    }
+
+    public void onNext(View view) {
+        mPlayJniProxy.next(playUrl);
     }
 }
