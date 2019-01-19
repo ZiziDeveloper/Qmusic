@@ -265,7 +265,7 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
 
 void AudioCoder::stop() {
     LOGI("AudioCoder::stop");
-    if (NULL != pQueue) {
+    if (NULL != pQueue && pQueue->size() > 0) {
         pQueue->clearQueue();
     }
 }

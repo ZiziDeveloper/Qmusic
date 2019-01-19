@@ -27,8 +27,15 @@ void NotifyApplication::init(_JavaVM *jvm, JNIEnv *jenv, jobject *pObj) {
     this->jmid_error = jenv->GetMethodID(jlz
             , "onError", "(ILjava/lang/String;)V");
     this->jmid_prepare = jenv->GetMethodID(jlz, "onPrepared", "()V");
-    LOGE("truyayong init onPlayNext");
-    this->jmid_playnext = jenv->GetMethodID(jlz, "onPlayNext", "()V");
+    this->jmid_started = jenv->GetMethodID(jlz, "onStarted", "()V");
+    this->jmid_resumed = jenv->GetMethodID(jlz, "onResumed", "()V");
+    this->jmid_paused = jenv->GetMethodID(jlz, "onPaused", "()V");
+    this->jmid_stopped = jenv->GetMethodID(jlz, "onStopped", "()V");
+    this->jmid_seeked = jenv->GetMethodID(jlz, "onSeeked", "(I)V");
+    this->jmid_volumeModified = jenv->GetMethodID(jlz, "onVolumeModified", "(I)V");
+    this->jmid_channelLayoutModified = jenv->GetMethodID(jlz, "onChannelLayoutModify", "(I)V");
+    this->jmid_pitchModified = jenv->GetMethodID(jlz, "onPitchModified", "(F)V");
+    this->jmid_speedModified = jenv->GetMethodID(jlz, "onSpeedModified", "(F)V");
 }
 
 void NotifyApplication::notifyError(int type, int code, const char *msg) {
@@ -71,19 +78,129 @@ void NotifyApplication::notifyComplete() {
 
 }
 
-void NotifyApplication::notifyPlayNext(int type) {
+void NotifyApplication::notifyStopped(int type) {
 
     if (MAIN_THREAD == type) {
-        LOGE("truyayong enter onPlayNext");
-        jenv->CallVoidMethod(jobj, jmid_playnext);
-        LOGE("truyayong end onPlayNext");
+        jenv->CallVoidMethod(jobj, jmid_stopped);
     } else if (CHILD_THREAD == type) {
         JNIEnv* env;
         if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
-            LOGE("NotifyApplication::notifyPlayNext get child jnienv wrong");
+            LOGE("NotifyApplication::notifyStopped get child jnienv wrong");
             return;
         }
-        env->CallVoidMethod(jobj, jmid_playnext);
+        env->CallVoidMethod(jobj, jmid_stopped);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifyStarted(int type) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_started);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifyStarted get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_started);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifyResumed(int type) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_resumed);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifyStarted get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_resumed);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifyPaused(int type) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_paused);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifyStarted get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_paused);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifySeeked(int type, int progress) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_seeked, progress);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifySeeked get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_seeked, progress);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifyVolumeModified(int type, int percent) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_volumeModified, percent);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifyVolumeModified get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_volumeModified, percent);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifyChannelLayoutModified(int type, int layout) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_channelLayoutModified, layout);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifyChannelLayoutModified get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_channelLayoutModified, layout);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifyPitchModified(int type, float pitch) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_pitchModified, pitch);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifyPitchModified get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_pitchModified, pitch);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifySpeedModified(int type, float speed) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_speedModified, speed);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifySpeedModified get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_speedModified, speed);
         jvm->DetachCurrentThread();
     }
 }

@@ -63,7 +63,7 @@ void AudioProccessor::stop() {
     PlaySession::getIns()->bExit = true;
     PlaySession::getIns()->playState = PLAY_STATE_STOPPED;
     setPlayState(PlaySession::getIns()->playState);
-    if (NULL == pAudioCoder) {
+    if (NULL != pAudioCoder) {
         pAudioCoder->stop();
     }
     releaseSL();
@@ -219,9 +219,9 @@ void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
             PlaySession::getIns()->currentClock += soundTouchReceiveNum / (double)(PlaySession::getIns()->inSampleRate * 2 * 2);
             if (PlaySession::getIns()->currentClock - PlaySession::getIns()->lastClock >= PlaySession::TIME_INTERVAL) {
                 PlaySession::getIns()->lastClock = PlaySession::getIns()->currentClock;
-                //TODO[truyayong] 回调到应用层
-                LOGE("[truyayong] current : %f, tol : %d", PlaySession::getIns()->currentClock
-                , PlaySession::getIns()->duration);
+                //TODO[truyayong] 时间回调到应用层
+//                LOGE("[truyayong] current : %f, tol : %d", PlaySession::getIns()->currentClock
+//                , PlaySession::getIns()->duration);
             }
         }
         (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->soundTouchBuffer
@@ -347,6 +347,7 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     setVolume(PlaySession::getIns()->volume);
     switchChannel(PlaySession::getIns()->outChannelLayout);
     setPlayState(PlaySession::getIns()->playState);
+    NotifyApplication::getIns()->notifyStarted(CHILD_THREAD);
     return true;
 }
 
@@ -430,6 +431,7 @@ void AudioProccessor::releaseSL() {
 
     if (NULL != engineObj) {
         (*engineObj)->Destroy(engineObj);
+        engineObj = NULL;
         engineItf = NULL;
     }
 

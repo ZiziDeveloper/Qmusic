@@ -16,15 +16,8 @@
             android:layout_weight="1"
             android:layout_height="match_parent"
             android:textSize="8dp"
-            android:text="prepare"
-            android:onClick="onPrepare"/>
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:textSize="8dp"
-            android:text="start"
-            android:onClick="onStart" />
+            android:text="Start"
+            android:onClick="onStart"/>
         <Button
             android:layout_width="0dp"
             android:layout_weight="1"

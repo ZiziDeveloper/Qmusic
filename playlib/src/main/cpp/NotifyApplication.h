@@ -24,18 +24,34 @@ private:
     JNIEnv* jenv;
     jobject jobj;
     jmethodID jmid_prepare;
+    jmethodID jmid_started;
+    jmethodID jmid_resumed;
+    jmethodID jmid_paused;
+    jmethodID jmid_stopped;
+    jmethodID jmid_seeked;
+    jmethodID jmid_volumeModified;
+    jmethodID jmid_channelLayoutModified;
+    jmethodID jmid_pitchModified;
+    jmethodID jmid_speedModified;
     jmethodID jmid_error;
-    jmethodID jmid_playnext;
 private:
     NotifyApplication();
 public:
     static NotifyApplication* getIns();
     void init(_JavaVM *jvm, JNIEnv *jenv, jobject* pObj);
-    void notifyError(int type, int code, const char* msg);
     void notifyPrepared(int type);
+    void notifyStarted(int type);
+    void notifyResumed(int type);
+    void notifyPaused(int type);
+    void notifyStopped(int type);
+    void notifySeeked(int type, int progress);
+    void notifyVolumeModified(int type, int percent);
+    void notifyChannelLayoutModified(int type, int layout);
+    void notifyPitchModified(int type, float pitch);
+    void notifySpeedModified(int type, float speed);
     void notifyLoad(bool load);
     void notifyComplete();
-    void notifyPlayNext(int type);
+    void notifyError(int type, int code, const char* msg);
 };
 
 
