@@ -53,12 +53,14 @@ public:
 
     float pitch = 1.0f;
     float speed = 1.0f;
+private:
+    void releaseUrl();
 public:
     static PlaySession* getIns();
 
     char *getUrl() const;
 
-    void setUrl(char *pUrl);
+    void allocUrl(char *pUrl, int length);
 
     //获取音频布局不同所需要的byte数
     int getInChannelLayoutBytes();

@@ -15,11 +15,7 @@ PlaySession* PlaySession::p = new PlaySession();
 
 
 char *PlaySession::getUrl() const {
-    return pUrl;
-}
-
-void PlaySession::setUrl(char *pUrl) {
-    PlaySession::pUrl = pUrl;
+    return this->pUrl;
 }
 
 int PlaySession::getInChannelLayoutBytes() {
@@ -44,4 +40,20 @@ int PlaySession::getoutChannelLayoutBytes() {
         bytes = 2;
     }
     return bytes;
+}
+
+void PlaySession::allocUrl(char *pUrl, int length) {
+    if (NULL != this->pUrl) {
+        free(this->pUrl);
+        this->pUrl = NULL;
+    }
+    this->pUrl = (char*)malloc(length);
+    strcpy(this->pUrl, pUrl);
+}
+
+void PlaySession::releaseUrl() {
+    if (NULL != this->pUrl) {
+        free(this->pUrl);
+        this->pUrl = NULL;
+    }
 }

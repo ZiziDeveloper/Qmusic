@@ -85,6 +85,10 @@ public:
     //创建播放器
     bool prepareSLPlay(SLDataSink& audioSink);
 
+    /**
+     * 将从frame中pcm数据转成适配SoundTouch格式
+     * @return
+     */
     int adapterPcmToSoundTouch();
 
 };

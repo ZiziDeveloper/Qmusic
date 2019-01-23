@@ -33,6 +33,8 @@ public:
     pthread_mutex_t prepareDecodeMutex;
     //buffer申请1s的样本数，一般来说一个AVFrame包含的样本数都会小于1s的数量
     uint8_t *buffer = NULL;
+    //标识packet是否已经全部解析成frame
+    bool bReadFrameOver = true;
 private:
     /**
      * 计算当前播放时间
@@ -46,7 +48,13 @@ public:
     void prepare();
     void prepareDecoder();
     void start();
-    //音频重采样
+
+    /**
+     * 音频重采样,从packet队列中拿出packet解析成frame，一个packet可能有几个frame,
+     * AudioCoder#bReadFrameOver标识packet是否已经全部解析成frame
+     * @param pcmBuf
+     * @return
+     */
     int reSampleAudio(void **pcmBuf);
     int getSampleRate();
     void stop();

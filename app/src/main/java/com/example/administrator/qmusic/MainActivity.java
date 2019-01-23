@@ -1,5 +1,6 @@
 package com.example.administrator.qmusic;
 
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.playlib.PlayJniProxy;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -23,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
     PlayJniProxy mPlayJniProxy;
     private String playUrl = "http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3";
     private String nextUrl = "http://ngcdn004.cnr.cn/live/dszs/index.m3u8";
+    private String ape = Environment.getExternalStorageDirectory() + File.separator + "被风吹过的夏天.ape";
+    private String Aape = Environment.getExternalStorageDirectory() + File.separator + "SideA-small.ape";
+    public String local = "/storage/emulated/0/1.mp3";
     private SeekBar mVolumeBar;
     private SeekBar mTimeBar;
     private boolean mPlayNext = false;
@@ -147,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         if (mPlayState == PLAYSTATE_START) {
             return;
         }
-        mPlayJniProxy.prepare(nextUrl,  mVolume, mChannelLayout);
+        mPlayJniProxy.prepare(ape,  mVolume, mChannelLayout);
     }
 
     public void onPause(View view) {

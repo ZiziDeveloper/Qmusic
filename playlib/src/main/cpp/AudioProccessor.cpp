@@ -241,7 +241,6 @@ int AudioProccessor::adapterPcmToSoundTouch() {
             pcmSize = pAudioCoder->reSampleAudio((void **)&pOutBuf);
             if (pcmSize > 0) {
                 for (int i = 0; i < pcmSize / 2 + 1; i++) {
-                    int o = i;
                     soundTouchBuffer[i] = (pOutBuf[i * 2] | ((pOutBuf[i * 2 + 1]) << 8));
                 }
                 soundTouch->putSamples(soundTouchBuffer, PlaySession::getIns()->numSampleAvFrame);

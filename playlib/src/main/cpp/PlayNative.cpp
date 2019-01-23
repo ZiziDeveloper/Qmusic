@@ -8,6 +8,21 @@
 AudioProccessor* pAudioProccessor = NULL;
 _JavaVM* javaVM = NULL;
 
+/***********************************************************************
+ * c++ method
+ */
+void nativeStop() {
+    if (NULL != pAudioProccessor) {
+        pAudioProccessor->stop();
+        delete  pAudioProccessor;
+        pAudioProccessor = NULL;
+    }
+    NotifyApplication::getIns()->notifyStopped(MAIN_THREAD);
+}
+
+/***********************************************************************
+ * jni method
+ */
 extern "C"
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -28,13 +43,15 @@ JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1prepare(JNIEnv *env, jobject instance,
                                                       jstring source_, jint volume, jint layout) {
     const char *source = env->GetStringUTFChars(source_, 0);
+    int length = env->GetStringLength(source_);
+    PlaySession::getIns()->allocUrl((char *) source, length);
+    NotifyApplication::getIns()->init(javaVM, env, &instance);
+    nativeStop();
     if (NULL == pAudioProccessor) {
-        PlaySession::getIns()->setUrl((char *) source);
-        NotifyApplication::getIns()->init(javaVM, env, &instance);
         pAudioProccessor = new AudioProccessor;
-        pAudioProccessor->prepare();
     }
-    LOGI("native_prepare");
+    pAudioProccessor->prepare();
+    LOGI("native_prepare url : %s ", PlaySession::getIns()->getUrl());
     env->ReleaseStringUTFChars(source_, source);
 }
 
@@ -67,12 +84,7 @@ Java_com_example_playlib_PlayJniProxy_native_1pause(JNIEnv *env, jobject instanc
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_playlib_PlayJniProxy_native_1stop(JNIEnv *env, jobject instance) {
-    if (NULL != pAudioProccessor) {
-        pAudioProccessor->stop();
-        delete  pAudioProccessor;
-        pAudioProccessor = NULL;
-    }
-    NotifyApplication::getIns()->notifyStopped(MAIN_THREAD);
+    nativeStop();
 }
 
 extern "C"

@@ -41,7 +41,7 @@ void AudioCoder::prepareDecoder() {
     int ret = avformat_open_input(&pAVFormatCtx
             , PlaySession::getIns()->getUrl(), NULL, NULL);
     if (ret != 0) {
-        LOGE("AudioCoder::prepareDecoder avformat_open_input err : %s", ErrUtil::errLog(ret));
+        LOGE("AudioCoder::prepareDecoder avformat_open_input err : %s, url : %s", ErrUtil::errLog(ret), PlaySession::getIns()->getUrl());
         NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
         PlaySession::getIns()->bExit = true;
         pthread_mutex_unlock(&prepareDecodeMutex);
@@ -85,7 +85,7 @@ void AudioCoder::prepareDecoder() {
         return;
     }
 
-    ret = avcodec_parameters_from_context(pCodecPara, pAVCodecCtx);
+    ret = avcodec_parameters_to_context(pAVCodecCtx, pCodecPara);
     if (ret < 0) {
         LOGE("AudioCoder::prepareDecoder avcodec_parameters_from_context err : %s", ErrUtil::errLog(ret));
         NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
@@ -153,7 +153,6 @@ int AudioCoder::getSampleRate() {
 int AudioCoder::reSampleAudio(void **pcmBuf) {
     int ret;
     int dataSize = 0;
-    bool bReadFrameOver = true;
     AVPacket* avPacket = NULL;
     AVFrame* avFrame = NULL;
     while (!PlaySession::getIns()->bExit) {
@@ -186,7 +185,7 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
             }
             ret = avcodec_send_packet(pAVCodecCtx, avPacket);
             if (ret != 0) {
-                LOGE("avcodec_send_packet err: %s", ErrUtil::errLog(ret));
+                LOGE("avcodec_send_packet ret : %d err: %s", ret, ErrUtil::errLog(ret));
                 av_packet_free(&avPacket);
                 av_free(avPacket);
                 avPacket = NULL;
