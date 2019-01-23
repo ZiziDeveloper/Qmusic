@@ -33,6 +33,7 @@ private:
     jmethodID jmid_channelLayoutModified;
     jmethodID jmid_pitchModified;
     jmethodID jmid_speedModified;
+    jmethodID jmid_progress;
     jmethodID jmid_error;
 private:
     NotifyApplication();
@@ -50,7 +51,7 @@ public:
     void notifyPitchModified(int type, float pitch);
     void notifySpeedModified(int type, float speed);
     void notifyLoad(bool load);
-    void notifyComplete();
+    void notifyProgress(int type, float current, int total);
     void notifyError(int type, int code, const char* msg);
 };
 

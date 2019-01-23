@@ -219,6 +219,18 @@ public class PlayJniProxy {
     }
 
     /**
+     * 播放进度回调
+     * @param currentProgress
+     * @param total
+     */
+    private void onPlayProgress(float currentProgress, int total) {
+        Log.i(TAG, "qmusic onPlayProgress currentProgress : " + currentProgress + " Total : " + total);
+        if (mPlayProgressCallBack != null) {
+            mPlayProgressCallBack.onPlayProgress(currentProgress, total);
+        }
+    }
+
+    /**
      * 错误回调
      * @param code
      * @param msg
@@ -245,5 +257,6 @@ public class PlayJniProxy {
         void onPitchModified(float pitch);
         void onSpeedModified(float speed);
         void onError(int code, String msg);
+        void onPlayProgress(float currentProgress, int Total);
     }
 }

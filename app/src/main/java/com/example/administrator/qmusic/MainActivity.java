@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     public String local = "/storage/emulated/0/1.mp3";
     private SeekBar mVolumeBar;
     private SeekBar mTimeBar;
+    private ProgressBar mClockBar;
     private boolean mPlayNext = false;
     private int mPlayState = PLAYSTATE_INIT;
     private int mVolume = 85;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        mClockBar = (ProgressBar) findViewById(R.id.progress_time);
         mVolumeBar.setProgress(mVolume);
         mTimeBar = (SeekBar) findViewById(R.id.seek_time);
         mTimeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -143,6 +146,17 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(getApplicationContext(),
                                 "error code : " + code + " msg : " + msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onPlayProgress(final float currentProgress, final int total) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        int progress = (int)(currentProgress / (float) total * 100.0f);
+                        mClockBar.setProgress(progress);
                     }
                 });
             }

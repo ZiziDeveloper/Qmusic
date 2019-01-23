@@ -23,7 +23,7 @@ class PlaySession {
 private:
     PlaySession();
     static PlaySession *p;
-    char* pUrl;
+    char* pUrl = NULL;
 public:
     bool bExit = false;
     bool bSeeking = false;
@@ -45,9 +45,9 @@ public:
     int64_t duration = 0;
     AVRational timeBase;
     //当前播放时长
-    double currentClock;
+    double currentClock = 0;
     //最近一次的播放时长
-    double lastClock;
+    double lastClock = 0;
     //上报到应用层的最短时间间隔
     static const double TIME_INTERVAL = 0.1;
 

@@ -36,6 +36,7 @@ void NotifyApplication::init(_JavaVM *jvm, JNIEnv *jenv, jobject *pObj) {
     this->jmid_channelLayoutModified = jenv->GetMethodID(jlz, "onChannelLayoutModify", "(I)V");
     this->jmid_pitchModified = jenv->GetMethodID(jlz, "onPitchModified", "(F)V");
     this->jmid_speedModified = jenv->GetMethodID(jlz, "onSpeedModified", "(F)V");
+    this->jmid_progress = jenv->GetMethodID(jlz, "onPlayProgress", "(FI)V");
 }
 
 void NotifyApplication::notifyError(int type, int code, const char *msg) {
@@ -71,10 +72,6 @@ void NotifyApplication::notifyPrepared(int type) {
 }
 
 void NotifyApplication::notifyLoad(bool load) {
-
-}
-
-void NotifyApplication::notifyComplete() {
 
 }
 
@@ -201,6 +198,20 @@ void NotifyApplication::notifySpeedModified(int type, float speed) {
             return;
         }
         env->CallVoidMethod(jobj, jmid_speedModified, speed);
+        jvm->DetachCurrentThread();
+    }
+}
+
+void NotifyApplication::notifyProgress(int type, float current, int total) {
+    if (MAIN_THREAD == type) {
+        jenv->CallVoidMethod(jobj, jmid_progress, current, total);
+    } else if (CHILD_THREAD == type) {
+        JNIEnv* env;
+        if (jvm->AttachCurrentThread(&env, 0) != JNI_OK) {
+            LOGE("NotifyApplication::notifyProgress get child jnienv wrong");
+            return;
+        }
+        env->CallVoidMethod(jobj, jmid_progress, current, total);
         jvm->DetachCurrentThread();
     }
 }

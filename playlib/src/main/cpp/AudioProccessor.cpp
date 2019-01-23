@@ -222,6 +222,7 @@ void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
                 //TODO[truyayong] 时间回调到应用层
 //                LOGE("[truyayong] current : %f, tol : %d", PlaySession::getIns()->currentClock
 //                , PlaySession::getIns()->duration);
+                NotifyApplication::getIns()->notifyProgress(CHILD_THREAD, PlaySession::getIns()->currentClock, PlaySession::getIns()->duration);
             }
         }
         (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->soundTouchBuffer

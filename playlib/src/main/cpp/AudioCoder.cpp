@@ -143,7 +143,6 @@ void AudioCoder::start() {
             }
         }
     }
-    NotifyApplication::getIns()->notifyComplete();
 }
 
 int AudioCoder::getSampleRate() {
