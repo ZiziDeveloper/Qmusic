@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         if (mPlayState == PLAYSTATE_START) {
             return;
         }
-        mPlayJniProxy.prepare(ape,  mVolume, mChannelLayout);
+        mPlayJniProxy.prepare(playUrl,  mVolume, mChannelLayout);
     }
 
     public void onPause(View view) {
