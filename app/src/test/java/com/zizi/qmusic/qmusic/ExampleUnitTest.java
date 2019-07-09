@@ -1,4 +1,4 @@
-package com.example.administrator.qmusic;
+package com.zizi.qmusic.qmusic;
 
 import org.junit.Test;
 

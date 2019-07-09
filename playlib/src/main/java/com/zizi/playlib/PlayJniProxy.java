@@ -1,4 +1,4 @@
-package com.example.playlib;
+package com.zizi.playlib;
 
 import android.util.Log;
 

@@ -40,7 +40,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1prepare(JNIEnv *env, jobject instance,
+Java_com_zizi_playlib_PlayJniProxy_native_1prepare(JNIEnv *env, jobject instance,
                                                       jstring source_, jint volume, jint layout) {
     const char *source = env->GetStringUTFChars(source_, 0);
     int length = env->GetStringLength(source_);
@@ -57,7 +57,7 @@ Java_com_example_playlib_PlayJniProxy_native_1prepare(JNIEnv *env, jobject insta
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1start(JNIEnv *env, jobject instance) {
+Java_com_zizi_playlib_PlayJniProxy_native_1start(JNIEnv *env, jobject instance) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->start();
     }
@@ -65,7 +65,7 @@ Java_com_example_playlib_PlayJniProxy_native_1start(JNIEnv *env, jobject instanc
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1resume(JNIEnv *env, jobject instance) {
+Java_com_zizi_playlib_PlayJniProxy_native_1resume(JNIEnv *env, jobject instance) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->resume();
         NotifyApplication::getIns()->notifyResumed(MAIN_THREAD);
@@ -74,7 +74,7 @@ Java_com_example_playlib_PlayJniProxy_native_1resume(JNIEnv *env, jobject instan
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1pause(JNIEnv *env, jobject instance) {
+Java_com_zizi_playlib_PlayJniProxy_native_1pause(JNIEnv *env, jobject instance) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->pause();
         NotifyApplication::getIns()->notifyPaused(MAIN_THREAD);
@@ -83,13 +83,13 @@ Java_com_example_playlib_PlayJniProxy_native_1pause(JNIEnv *env, jobject instanc
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1stop(JNIEnv *env, jobject instance) {
+Java_com_zizi_playlib_PlayJniProxy_native_1stop(JNIEnv *env, jobject instance) {
     nativeStop();
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1seek(JNIEnv *env, jobject instance, jint progress) {
+Java_com_zizi_playlib_PlayJniProxy_native_1seek(JNIEnv *env, jobject instance, jint progress) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->seek(progress);
         NotifyApplication::getIns()->notifySeeked(MAIN_THREAD, progress);
@@ -98,7 +98,7 @@ Java_com_example_playlib_PlayJniProxy_native_1seek(JNIEnv *env, jobject instance
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1duration(JNIEnv *env, jobject instance) {
+Java_com_zizi_playlib_PlayJniProxy_native_1duration(JNIEnv *env, jobject instance) {
 
     // TODO
 
@@ -106,7 +106,7 @@ Java_com_example_playlib_PlayJniProxy_native_1duration(JNIEnv *env, jobject inst
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1volume(JNIEnv *env, jobject instance, jint percent) {
+Java_com_zizi_playlib_PlayJniProxy_native_1volume(JNIEnv *env, jobject instance, jint percent) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->setVolume(percent);
         NotifyApplication::getIns()->notifyVolumeModified(MAIN_THREAD, percent);
@@ -115,7 +115,7 @@ Java_com_example_playlib_PlayJniProxy_native_1volume(JNIEnv *env, jobject instan
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1pitch(JNIEnv *env, jobject instance, jfloat pitch) {
+Java_com_zizi_playlib_PlayJniProxy_native_1pitch(JNIEnv *env, jobject instance, jfloat pitch) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->setPitch(pitch);
         NotifyApplication::getIns()->notifyPitchModified(MAIN_THREAD, pitch);
@@ -124,7 +124,7 @@ Java_com_example_playlib_PlayJniProxy_native_1pitch(JNIEnv *env, jobject instanc
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1speed(JNIEnv *env, jobject instance, jfloat speed) {
+Java_com_zizi_playlib_PlayJniProxy_native_1speed(JNIEnv *env, jobject instance, jfloat speed) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->setSpeed(speed);
         NotifyApplication::getIns()->notifySpeedModified(MAIN_THREAD, speed);
@@ -133,7 +133,7 @@ Java_com_example_playlib_PlayJniProxy_native_1speed(JNIEnv *env, jobject instanc
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1samplerate(JNIEnv *env, jobject instance) {
+Java_com_zizi_playlib_PlayJniProxy_native_1samplerate(JNIEnv *env, jobject instance) {
 
     // TODO
 
@@ -141,7 +141,7 @@ Java_com_example_playlib_PlayJniProxy_native_1samplerate(JNIEnv *env, jobject in
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_playlib_PlayJniProxy_native_1channel_1switch(JNIEnv *env, jobject instance,
+Java_com_zizi_playlib_PlayJniProxy_native_1channel_1switch(JNIEnv *env, jobject instance,
                                                              jint channel) {
     if (NULL != pAudioProccessor) {
         pAudioProccessor->switchChannel(channel);

@@ -1,4 +1,4 @@
-package com.example.administrator.qmusic;
+package com.zizi.qmusic.qmusic;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

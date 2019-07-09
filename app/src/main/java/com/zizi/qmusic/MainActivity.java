@@ -1,4 +1,4 @@
-package com.example.administrator.qmusic;
+package com.zizi.qmusic;
 
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -7,10 +7,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.playlib.PlayJniProxy;
+import com.zizi.playlib.PlayJniProxy;
+import com.zizi.qmusic.qmusic.R;
 
 import java.io.File;
 
