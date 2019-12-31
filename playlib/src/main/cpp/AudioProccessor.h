@@ -20,7 +20,8 @@ extern "C" {
 };
 using namespace soundtouch;
 /**
- * 音频处理层，负责播放音频与调度AudioCoder解码
+ * 音频处理层，负责播放音频与调度AudioCoder解码  音频播放使用openSL,解码用ffmpeg,音频特效处理使用的是SoundTouch
+ * [todo]qiuyayong之后需要考虑接入硬件解码
  */
 class AudioProccessor {
 private:

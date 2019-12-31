@@ -230,12 +230,14 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
                                               * PlaySession::getIns()->getInChannelLayoutBytes()
                                               * av_get_bytes_per_sample(PlaySession::getIns()->outFmt));
             }
+
             PlaySession::getIns()->numSampleAvFrame = swr_convert(
                     pSwrCtx, &buffer,
                     avFrame->nb_samples,
                     (const uint8_t **)avFrame->data,
                     avFrame->nb_samples);
             *pcmBuf = buffer;
+
             int outChannels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
             dataSize = PlaySession::getIns()->numSampleAvFrame * outChannels * av_get_bytes_per_sample(PlaySession::getIns()->outFmt);
 

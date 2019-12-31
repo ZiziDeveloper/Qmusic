@@ -20,6 +20,7 @@ extern "C" {
 
 /**
  * 音频编解码层
+ * [todo]qiuyayong 后续考虑接入硬件编解码
  */
 class AudioCoder {
 private:
