@@ -1,120 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:fitsSystemWindows="true">
+
+    <com.zizi.qmusic.componets.waveComponent.view.WaveSurfaceView
+        android:id="@+id/wavesfv"
+        android:layout_width="fill_parent"
+        android:layout_height="120dp"/>
+
+    <com.zizi.qmusic.componets.waveComponent.view.WaveformView
+        android:id="@+id/waveview"
+        android:visibility="invisible"
+        android:layout_width="fill_parent"
+        android:layout_height="120dp" />
+
+    <TextView
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/wavesfv"
+        android:id="@+id/status"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="未开始录音"/>
+
+    <Button
+        android:layout_marginTop="10dp"
+        android:id="@+id/switchbtn"
+        android:layout_below="@+id/status"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="开始录音"/>
+
+    <Button
+        android:layout_marginTop="10dp"
+        android:id="@+id/play"
+        android:layout_below="@+id/switchbtn"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="播放录音"/>
+
+    <Button
+        android:layout_marginTop="10dp"
+        android:id="@+id/socreaudio"
+        android:layout_below="@+id/play"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="比较两音频文件相识度"/>
 
     <LinearLayout
+        android:layout_below="@id/socreaudio"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:textSize="8dp"
-            android:text="Start"
-            android:onClick="onStart"/>
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:textSize="8dp"
-            android:text="Next"
-            android:onClick="onNext" />
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:textSize="8dp"
-            android:text="pause"
-            android:onClick="onPause" />
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:textSize="8dp"
-            android:text="resume"
-            android:onClick="onResume" />
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:textSize="8dp"
-            android:text="stop"
-            android:onClick="onStop" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:textSize="8dp"
+                android:text="Start"
+                android:onClick="onStart"/>
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:textSize="8dp"
+                android:text="Next"
+                android:onClick="onNext" />
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:textSize="8dp"
+                android:text="pause"
+                android:onClick="onPause" />
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:textSize="8dp"
+                android:text="resume"
+                android:onClick="onResume" />
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:textSize="8dp"
+                android:text="stop"
+                android:onClick="onStop" />
+        </LinearLayout>
+        <SeekBar
+            android:id="@+id/seek_volume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="LEFT"
+                android:onClick="onLeft" />
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="stereo"
+                android:onClick="onStereo" />
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="RIGHT"
+                android:onClick="onRight" />
+        </LinearLayout>
+
+        <SeekBar
+            android:id="@+id/seek_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <ProgressBar
+            android:id="@+id/progress_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyleHorizontal"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="音调高"
+                android:onClick="onPitch" />
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="正常"
+                android:onClick="onNormal" />
+            <Button
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:text="速度快"
+                android:onClick="onSpeed" />
+        </LinearLayout>
     </LinearLayout>
-    <SeekBar
-        android:id="@+id/seek_volume"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="LEFT"
-            android:onClick="onLeft" />
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="stereo"
-            android:onClick="onStereo" />
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="RIGHT"
-            android:onClick="onRight" />
-    </LinearLayout>
-
-    <SeekBar
-        android:id="@+id/seek_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-    <ProgressBar
-        android:id="@+id/progress_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="?android:attr/progressBarStyleHorizontal"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="音调高"
-            android:onClick="onPitch" />
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="正常"
-            android:onClick="onNormal" />
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="速度快"
-            android:onClick="onSpeed" />
-    </LinearLayout>
-
-    <com.zizi.qmusic.views.WaveView
-        android:id="@+id/track_view"
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:layout_marginBottom="10dp"
-        />
+</RelativeLayout>
 
 
-</LinearLayout>
