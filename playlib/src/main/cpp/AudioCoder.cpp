@@ -271,7 +271,7 @@ void AudioCoder::stop() {
 }
 
 void AudioCoder::seek(int64_t second) {
-    LOGI("AudioCoder::seek second : %ld duration : %ld", second, PlaySession::getIns()->duration);
+    LOGI("AudioCoder::seek second : %lld duration : %lld", second, PlaySession::getIns()->duration);
     if (PlaySession::getIns()->duration < 0) {
         return;
     }

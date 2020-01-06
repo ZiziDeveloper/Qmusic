@@ -5,12 +5,11 @@
 #include "AudioProccessor.h"
 
 AudioProccessor::AudioProccessor() {
-    pAudioCoder = new AudioCoder();
+    pAudioCoder  = std::shared_ptr<AudioCoder>( new AudioCoder());
     pthread_mutex_init(&adapterPcmMutex, NULL);
 }
 
 AudioProccessor::~AudioProccessor() {
-    delete pAudioCoder;
     pthread_mutex_destroy(&adapterPcmMutex);
 }
 
@@ -282,7 +281,7 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     SLDataFormat_PCM pcm = {
             SL_DATAFORMAT_PCM,//播放pcm格式的数据
             2,//2个声道（立体声）
-            adapterSLSampleRate(PlaySession::getIns()->outSmapleRate),//44100hz的频率
+            static_cast<SLuint32>(adapterSLSampleRate(PlaySession::getIns()->outSmapleRate)),//44100hz的频率
             SL_PCMSAMPLEFORMAT_FIXED_16,//位数 16位
             SL_PCMSAMPLEFORMAT_FIXED_16,//和位数一致就行
             SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,//立体声（前左前右）

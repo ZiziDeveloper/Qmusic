@@ -49,7 +49,7 @@ public:
     //最近一次的播放时长
     double lastClock = 0;
     //上报到应用层的最短时间间隔
-    static const double TIME_INTERVAL = 0.1;
+    static constexpr double TIME_INTERVAL = 0.1;
 
     float pitch = 1.0f;
     float speed = 1.0f;

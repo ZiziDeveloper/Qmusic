@@ -14,6 +14,7 @@
 #include "AndroidLog.h"
 #include "NotifyApplication.h"
 #include "SoundTouch.h"
+#include <memory>
 extern "C" {
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
@@ -42,7 +43,7 @@ private:
 
 
 public:
-    AudioCoder *pAudioCoder;
+    std::shared_ptr<AudioCoder> pAudioCoder;
     //开始播放线程
     pthread_t startPlayThread;
     pthread_t startDecodeThread;
