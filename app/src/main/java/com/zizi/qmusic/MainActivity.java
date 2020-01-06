@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
      * 初始化权限
      */
     public void initPermission(){
-        MainActivityPermissionsDispatcher.initAudioWithCheck(this);
+//        MainActivityPermissionsDispatcher.initAudioWithCheck(this);
     }
 
     /**

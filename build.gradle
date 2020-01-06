@@ -3,8 +3,10 @@
 buildscript {
     
     repositories {
-        google()
-        jcenter()
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/jcenter' }//jcenter访问不了时用阿里云
+//        google()
+//        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.0'
