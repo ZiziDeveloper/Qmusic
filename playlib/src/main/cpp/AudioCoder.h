@@ -24,16 +24,16 @@ extern "C" {
  */
 class AudioCoder {
 private:
-    AVFormatContext* pAVFormatCtx = NULL;
-    int mStreamIndex = -1;
-    AVCodecContext* pAVCodecCtx = NULL;
-    AVCodecParameters* pCodecPara = NULL;
-    PacketQueue* pQueue = NULL;
+    AVFormatContext* pAVFormatCtx;
+    int mStreamIndex;
+    AVCodecContext* pAVCodecCtx;
+    AVCodecParameters* pCodecPara;
+    PacketQueue* pQueue;
 public:
     pthread_t prepareDecodeThread;
     pthread_mutex_t prepareDecodeMutex;
     //buffer申请1s的样本数，一般来说一个AVFrame包含的样本数都会小于1s的数量
-    uint8_t *buffer = NULL;
+    uint8_t *buffer;
     //标识packet是否已经全部解析成frame
     bool bReadFrameOver = true;
 private:

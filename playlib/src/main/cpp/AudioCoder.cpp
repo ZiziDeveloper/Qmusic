@@ -6,15 +6,23 @@
 #include "AudioCoder.h"
 
 AudioCoder::AudioCoder() {
-    pthread_mutex_init(&prepareDecodeMutex, NULL);
+    pAVFormatCtx = nullptr;
+    mStreamIndex = -1;
+    pAVCodecCtx = nullptr;
+    pCodecPara = nullptr;
+    pQueue = nullptr;
+    buffer = nullptr;
+    bReadFrameOver = true;
+
+    pthread_mutex_init(&prepareDecodeMutex, nullptr);
     pQueue = new PacketQueue();
 }
 
 AudioCoder::~AudioCoder() {
     pQueue->clearQueue();
-    if (NULL != buffer) {
+    if (nullptr != buffer) {
         av_free(buffer);
-        buffer = NULL;
+        buffer = nullptr;
     }
     pthread_mutex_destroy(&prepareDecodeMutex);
 }
@@ -28,7 +36,7 @@ void *decodePrepareRunnable(void* data) {
 void AudioCoder::prepare() {
     LOGI("AudioCoder::prepare");
     pthread_create(&prepareDecodeThread
-            , NULL, decodePrepareRunnable, this);
+            , nullptr, decodePrepareRunnable, this);
 }
 
 void AudioCoder::prepareDecoder() {
@@ -39,7 +47,7 @@ void AudioCoder::prepareDecoder() {
     pAVFormatCtx = avformat_alloc_context();
 
     int ret = avformat_open_input(&pAVFormatCtx
-            , PlaySession::getIns()->getUrl(), NULL, NULL);
+            , PlaySession::getIns()->getUrl(), nullptr, nullptr);
     if (ret != 0) {
         LOGE("AudioCoder::prepareDecoder avformat_open_input err : %s, url : %s", ErrUtil::errLog(ret), PlaySession::getIns()->getUrl());
         NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
@@ -48,7 +56,7 @@ void AudioCoder::prepareDecoder() {
         return;
     }
 
-    ret = avformat_find_stream_info(pAVFormatCtx, NULL);
+    ret = avformat_find_stream_info(pAVFormatCtx, nullptr);
     if (ret < 0) {
         LOGE("AudioCoder::prepareDecoder avformat_find_stream_info err : %s", ErrUtil::errLog(ret));
         NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
@@ -94,7 +102,7 @@ void AudioCoder::prepareDecoder() {
         return;
     }
 
-    ret = avcodec_open2(pAVCodecCtx, codec, NULL);
+    ret = avcodec_open2(pAVCodecCtx, codec, nullptr);
     if (ret < 0) {
         LOGE("AudioCoder::prepareDecoder avcodec_open2 err : %s", ErrUtil::errLog(ret));
         NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
@@ -152,8 +160,8 @@ int AudioCoder::getSampleRate() {
 int AudioCoder::reSampleAudio(void **pcmBuf) {
     int ret;
     int dataSize = 0;
-    AVPacket* avPacket = NULL;
-    AVFrame* avFrame = NULL;
+    AVPacket* avPacket = nullptr;
+    AVFrame* avFrame = nullptr;
     while (!PlaySession::getIns()->bExit) {
         if (PlaySession::getIns()->bSeeking) {
             av_usleep(1000 * 100);
@@ -179,7 +187,7 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
             if (pQueue->getAvPacket(avPacket) != 0) {
                 av_packet_free(&avPacket);
                 av_free(avPacket);
-                avPacket = NULL;
+                avPacket = nullptr;
                 continue;
             }
             ret = avcodec_send_packet(pAVCodecCtx, avPacket);
@@ -187,7 +195,7 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
                 LOGE("avcodec_send_packet ret : %d err: %s", ret, ErrUtil::errLog(ret));
                 av_packet_free(&avPacket);
                 av_free(avPacket);
-                avPacket = NULL;
+                avPacket = nullptr;
                 continue;
             }
         }
@@ -204,28 +212,28 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
             PlaySession::getIns()->inFmt = (AVSampleFormat)avFrame->format;
             SwrContext* pSwrCtx;
             pSwrCtx = swr_alloc_set_opts(
-                    NULL,
+                    nullptr,
                     AV_CH_LAYOUT_STEREO,
                     PlaySession::getIns()->outFmt,
                     avFrame->sample_rate,
                     PlaySession::getIns()->inChannelLayout,
                     PlaySession::getIns()->inFmt,
                     avFrame->sample_rate,
-                    NULL, NULL
+                    0, nullptr
             );
             if (!pSwrCtx || swr_init(pSwrCtx) < 0) {
                 av_packet_free(&avPacket);
                 av_free(avPacket);
-                avPacket = NULL;
+                avPacket = nullptr;
                 av_frame_free(&avFrame);
                 av_free(avFrame);
-                avFrame = NULL;
+                avFrame = nullptr;
                 swr_free(&pSwrCtx);
                 bReadFrameOver = true;
                 continue;
             }
 
-            if (NULL == buffer) {
+            if (nullptr == buffer) {
                 buffer = (uint8_t*) av_malloc(PlaySession::getIns()->inSampleRate
                                               * PlaySession::getIns()->getInChannelLayoutBytes()
                                               * av_get_bytes_per_sample(PlaySession::getIns()->outFmt));
@@ -246,17 +254,17 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
 
             av_frame_free(&avFrame);
             av_free(avFrame);
-            avFrame = NULL;
+            avFrame = nullptr;
             swr_free(&pSwrCtx);
             break;
         } else {
             bReadFrameOver = true;
             av_packet_free(&avPacket);
             av_free(avPacket);
-            avPacket = NULL;
+            avPacket = nullptr;
             av_frame_free(&avFrame);
             av_free(avFrame);
-            avFrame = NULL;
+            avFrame = nullptr;
             continue;
         }
     }
@@ -265,7 +273,7 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
 
 void AudioCoder::stop() {
     LOGI("AudioCoder::stop");
-    if (NULL != pQueue && pQueue->size() > 0) {
+    if (nullptr != pQueue && pQueue->size() > 0) {
         pQueue->clearQueue();
     }
 }
@@ -277,7 +285,7 @@ void AudioCoder::seek(int64_t second) {
     }
     if (second >= 0 && second <= PlaySession::getIns()->duration) {
         PlaySession::getIns()->bSeeking = true;
-        if (NULL != pQueue) {
+        if (nullptr != pQueue) {
             pQueue->clearQueue();
         }
         int64_t rel = second * AV_TIME_BASE;

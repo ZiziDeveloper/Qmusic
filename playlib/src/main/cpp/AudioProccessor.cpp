@@ -4,9 +4,29 @@
 
 #include "AudioProccessor.h"
 
-AudioProccessor::AudioProccessor() {
+AudioProccessor::AudioProccessor() : reverbSettings(SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR) {
+    engineObj = nullptr;
+    engineItf = nullptr;
+
+    outputMixObj = nullptr;
+    outputMixEnvironmentalReverb = nullptr;
+
+    pcmPlayObj = nullptr;
+    pcmPlayItf = nullptr;
+    pcmVolumeItf = nullptr;
+    pcmMuteSoloItf = nullptr;
+
+
     pAudioCoder  = std::shared_ptr<AudioCoder>( new AudioCoder());
-    pthread_mutex_init(&adapterPcmMutex, NULL);
+
+
+    pcmBufQueueItf = nullptr;
+    pOutBuf = nullptr;
+
+    soundTouch = nullptr;
+    soundTouchBuffer = nullptr;
+
+    pthread_mutex_init(&adapterPcmMutex, nullptr);
 }
 
 AudioProccessor::~AudioProccessor() {
@@ -15,7 +35,7 @@ AudioProccessor::~AudioProccessor() {
 
 void AudioProccessor::prepare() {
     LOGI("AudioProccessor::prepare");
-    if (NULL != pAudioCoder) {
+    if (nullptr != pAudioCoder) {
         pAudioCoder->prepare();
     }
 }
@@ -29,7 +49,7 @@ void* startPlayRunnable(void* data) {
 
 void* startDecodeRunnable(void* data) {
     AudioProccessor* proccessor = (AudioProccessor*) data;
-    if (NULL != proccessor->pAudioCoder) {
+    if (nullptr != proccessor->pAudioCoder) {
         proccessor->pAudioCoder->start();
     }
     pthread_exit(&proccessor->startDecodeThread);
@@ -40,29 +60,29 @@ void AudioProccessor::start() {
 
     allocSoundTouch();
     PlaySession::getIns()->bExit = false;
-    PlaySession::getIns()->playState = PLAY_STATE_PLAYING;
-    pthread_create(&startDecodeThread, NULL, startDecodeRunnable, this);
-    pthread_create(&startPlayThread,NULL, startPlayRunnable, this);
+    PlaySession::getIns()->playState = PlaySession::PLAY_STATE_PLAYING;
+    pthread_create(&startDecodeThread, nullptr, startDecodeRunnable, this);
+    pthread_create(&startPlayThread, nullptr, startPlayRunnable, this);
 }
 
 void AudioProccessor::pause() {
     LOGI("AudioProccessor::pause");
-    PlaySession::getIns()->playState = PLAY_STATE_PAUSED;
+    PlaySession::getIns()->playState = PlaySession::PLAY_STATE_PAUSED;
     setPlayState(PlaySession::getIns()->playState);
 }
 
 void AudioProccessor::resume() {
     LOGI("AudioProccessor::resume");
-    PlaySession::getIns()->playState = PLAY_STATE_PLAYING;
+    PlaySession::getIns()->playState = PlaySession::PLAY_STATE_PLAYING;
     setPlayState(PlaySession::getIns()->playState);
 }
 
 void AudioProccessor::stop() {
     LOGI("AudioProccessor::stop");
     PlaySession::getIns()->bExit = true;
-    PlaySession::getIns()->playState = PLAY_STATE_STOPPED;
+    PlaySession::getIns()->playState = PlaySession::PLAY_STATE_STOPPED;
     setPlayState(PlaySession::getIns()->playState);
-    if (NULL != pAudioCoder) {
+    if (nullptr != pAudioCoder) {
         pAudioCoder->stop();
     }
     releaseSL();
@@ -70,14 +90,14 @@ void AudioProccessor::stop() {
 }
 
 void AudioProccessor::seek(int64_t second) {
-    if (NULL != pAudioCoder) {
+    if (nullptr != pAudioCoder) {
         pAudioCoder->seek(second);
     }
 }
 
 void AudioProccessor::setVolume(int percent) {
     LOGI("AudioProccessor::setVolume percent : %d", percent);
-    if (NULL == pcmVolumeItf) {
+    if (nullptr == pcmVolumeItf) {
         return;
     }
     PlaySession::getIns()->volume = percent;
@@ -120,30 +140,30 @@ void AudioProccessor::setVolume(int percent) {
 
 void AudioProccessor::switchChannel(int64_t channel) {
     LOGI("AudioProccessor::switchChannel");
-    if (NULL == pcmMuteSoloItf) {
+    if (nullptr == pcmMuteSoloItf) {
         return;
     }
-    if (channel == PLAY_CHANNEL_RIGHT) {//右声道
+    if (channel == PlaySession::PLAY_CHANNEL_RIGHT) {//右声道
         (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 1, false);
         (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 0, true);
-    } else if (channel == PLAY_CHANNEL_LEFT) {//左声道
+    } else if (channel == PlaySession::PLAY_CHANNEL_LEFT) {//左声道
         (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 1, true);
         (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 0, false);
-    } else if (channel == PLAY_CHANNEL_STEREO) {//立体声
+    } else if (channel == PlaySession::PLAY_CHANNEL_STEREO) {//立体声
         (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 1, false);
         (*pcmMuteSoloItf)->SetChannelMute(pcmMuteSoloItf, 0, false);
     }
 }
 
 void AudioProccessor::setPitch(float pitch) {
-    if (NULL != soundTouch) {
+    if (nullptr != soundTouch) {
         PlaySession::getIns()->pitch = pitch;
         soundTouch->setPitch(PlaySession::getIns()->pitch);
     }
 }
 
 void AudioProccessor::setSpeed(float speed) {
-    if (NULL != soundTouch) {
+    if (nullptr != soundTouch) {
         PlaySession::getIns()->speed = speed;
         soundTouch->setTempo(PlaySession::getIns()->speed);
     }
@@ -212,7 +232,7 @@ bool AudioProccessor::prepareSLOutputMixAndPlay() {
 
 void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
     AudioProccessor *pPlayer = (AudioProccessor*) context;
-    if (NULL != pPlayer) {
+    if (nullptr != pPlayer) {
         int soundTouchReceiveNum = pPlayer->adapterPcmToSoundTouch();
         if (soundTouchReceiveNum > 0) {
             PlaySession::getIns()->currentClock += soundTouchReceiveNum / (double)(PlaySession::getIns()->inSampleRate * 2 * 2);
@@ -236,7 +256,7 @@ int AudioProccessor::adapterPcmToSoundTouch() {
     int pcmSize = 0;
     int receiveNum;
     while(!PlaySession::getIns()->bExit) {
-        pOutBuf = NULL;
+        pOutBuf = nullptr;
         if (finished) {
             pcmSize = pAudioCoder->reSampleAudio((void **)&pOutBuf);
             if (pcmSize > 0) {
@@ -255,7 +275,7 @@ int AudioProccessor::adapterPcmToSoundTouch() {
                 finished = true;
                 continue;
             } else {
-                if (NULL == pOutBuf) {
+                if (nullptr == pOutBuf) {
                     receiveNum = soundTouch->receiveSamples(
                             soundTouchBuffer, pcmSize / (PlaySession::getIns()->getoutChannelLayoutBytes()
                                                          * av_get_bytes_per_sample(PlaySession::getIns()->outFmt)));
@@ -351,14 +371,14 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
 }
 
 void AudioProccessor::setPlayState(int state) {
-    if (NULL == pcmPlayItf) {
+    if (nullptr == pcmPlayItf) {
         return;
     }
-    if (state == PLAY_STATE_STOPPED) {
+    if (state == PlaySession::PLAY_STATE_STOPPED) {
         (*pcmPlayItf)->SetPlayState(pcmPlayItf, SL_PLAYSTATE_STOPPED);
-    } else if (state == PLAY_STATE_PAUSED) {
+    } else if (state == PlaySession::PLAY_STATE_PAUSED) {
         (*pcmPlayItf)->SetPlayState(pcmPlayItf, SL_PLAYSTATE_PAUSED);
-    } else if (state == PLAY_STATE_PLAYING) {
+    } else if (state == PlaySession::PLAY_STATE_PLAYING) {
         (*pcmPlayItf)->SetPlayState(pcmPlayItf, SL_PLAYSTATE_PLAYING);
     }
 }
@@ -413,29 +433,29 @@ int AudioProccessor::adapterSLSampleRate(int sampleRate) {
 }
 
 void AudioProccessor::releaseSL() {
-    if (NULL != pcmPlayObj) {
+    if (nullptr != pcmPlayObj) {
         (*pcmPlayObj)->Destroy(pcmPlayObj);
-        pcmPlayObj = NULL;
-        pcmPlayItf = NULL;
-        pcmBufQueueItf = NULL;
-        pcmMuteSoloItf = NULL;
-        pcmVolumeItf = NULL;
+        pcmPlayObj = nullptr;
+        pcmPlayItf = nullptr;
+        pcmBufQueueItf = nullptr;
+        pcmMuteSoloItf = nullptr;
+        pcmVolumeItf = nullptr;
     }
 
-    if (NULL != outputMixObj) {
+    if (nullptr != outputMixObj) {
         (*outputMixObj)->Destroy(outputMixObj);
-        outputMixObj = NULL;
-        outputMixEnvironmentalReverb = NULL;
+        outputMixObj = nullptr;
+        outputMixEnvironmentalReverb = nullptr;
     }
 
-    if (NULL != engineObj) {
+    if (nullptr != engineObj) {
         (*engineObj)->Destroy(engineObj);
-        engineObj = NULL;
-        engineItf = NULL;
+        engineObj = nullptr;
+        engineItf = nullptr;
     }
 
-    if (NULL != pOutBuf) {
-        pOutBuf = NULL;
+    if (nullptr != pOutBuf) {
+        pOutBuf = nullptr;
     }
 }
 
@@ -451,13 +471,13 @@ void AudioProccessor::allocSoundTouch() {
 }
 
 void AudioProccessor::freeSoundTouch() {
-    if (NULL != soundTouch) {
+    if (nullptr != soundTouch) {
         delete  soundTouch;
-        soundTouch = NULL;
+        soundTouch = nullptr;
     }
-    if (NULL != soundTouchBuffer) {
+    if (nullptr != soundTouchBuffer) {
         av_free(soundTouchBuffer);
-        soundTouchBuffer = NULL;
+        soundTouchBuffer = nullptr;
     }
 }
 

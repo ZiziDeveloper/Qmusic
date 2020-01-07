@@ -5,7 +5,32 @@
 #include <cwchar>
 #include "PlaySession.h"
 
-PlaySession::PlaySession() {}
+PlaySession::PlaySession(){
+
+    bExit = false;
+    bSeeking = false;
+    bLoading = true;
+    volume = 85;
+    playState = PLAY_STATE_PLAYING;
+    outChannelLayout = PLAY_CHANNEL_STEREO;
+    inChannelLayout = 0;
+    outFmt = AV_SAMPLE_FMT_S16;
+    inFmt = AV_SAMPLE_FMT_S16;
+    outSmapleRate = 44100;
+    inSampleRate = 0;
+    numSampleAvFrame = 0;
+
+
+    duration = 0;
+
+    currentClock = 0;
+    lastClock = 0;
+
+    pitch = 1.0f;
+    speed = 1.0f;
+
+    pUrl = nullptr;
+}
 
 PlaySession *PlaySession::getIns() {
     return p;
@@ -43,17 +68,17 @@ int PlaySession::getoutChannelLayoutBytes() {
 }
 
 void PlaySession::allocUrl(char *pUrl, int length) {
-    if (NULL != this->pUrl) {
+    if (nullptr != this->pUrl) {
         free(this->pUrl);
-        this->pUrl = NULL;
+        this->pUrl = nullptr;
     }
     this->pUrl = (char*)malloc(length);
     strcpy(this->pUrl, pUrl);
 }
 
 void PlaySession::releaseUrl() {
-    if (NULL != this->pUrl) {
+    if (nullptr != this->pUrl) {
         free(this->pUrl);
-        this->pUrl = NULL;
+        this->pUrl = nullptr;
     }
 }

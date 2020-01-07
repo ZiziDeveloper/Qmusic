@@ -5,8 +5,8 @@
 #include "PacketQueue.h"
 
 PacketQueue::PacketQueue() {
-    pthread_mutex_init(&mMutex, NULL);
-    pthread_cond_init(&mCond, NULL);
+    pthread_mutex_init(&mMutex, nullptr);
+    pthread_cond_init(&mCond, nullptr);
 }
 
 PacketQueue::~PacketQueue() {
@@ -33,7 +33,7 @@ int PacketQueue::getAvPacket(AVPacket *packet) {
             }
             av_packet_free(&avPacket);
             av_free(avPacket);
-            avPacket = NULL;
+            avPacket = nullptr;
             break;
         } else {
             pthread_cond_wait(&mCond, &mMutex);
@@ -59,7 +59,7 @@ void PacketQueue::clearQueue() {
         mQueue.pop();
         av_packet_free(&packet);
         av_free(packet);
-        packet = NULL;
+        packet = nullptr;
     }
     pthread_mutex_unlock(&mMutex);
 }

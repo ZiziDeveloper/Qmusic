@@ -5,17 +5,17 @@
 #include "PlaySession.h"
 #include "NotifyApplication.h"
 
-AudioProccessor* pAudioProccessor = NULL;
-_JavaVM* javaVM = NULL;
+AudioProccessor* pAudioProccessor = nullptr;
+_JavaVM* javaVM = nullptr;
 
 /***********************************************************************
  * c++ method
  */
 void nativeStop() {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->stop();
         delete  pAudioProccessor;
-        pAudioProccessor = NULL;
+        pAudioProccessor = nullptr;
     }
     NotifyApplication::getIns()->notifyStopped(MAIN_THREAD);
 }
@@ -47,7 +47,7 @@ Java_com_zizi_playlib_PlayJniProxy_native_1prepare(JNIEnv *env, jobject instance
     PlaySession::getIns()->allocUrl((char *) source, length);
     NotifyApplication::getIns()->init(javaVM, env, &instance);
     nativeStop();
-    if (NULL == pAudioProccessor) {
+    if (nullptr == pAudioProccessor) {
         pAudioProccessor = new AudioProccessor;
     }
     pAudioProccessor->prepare();
@@ -58,7 +58,7 @@ Java_com_zizi_playlib_PlayJniProxy_native_1prepare(JNIEnv *env, jobject instance
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_zizi_playlib_PlayJniProxy_native_1start(JNIEnv *env, jobject instance) {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->start();
     }
 }
@@ -66,7 +66,7 @@ Java_com_zizi_playlib_PlayJniProxy_native_1start(JNIEnv *env, jobject instance) 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_zizi_playlib_PlayJniProxy_native_1resume(JNIEnv *env, jobject instance) {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->resume();
         NotifyApplication::getIns()->notifyResumed(MAIN_THREAD);
     }
@@ -75,7 +75,7 @@ Java_com_zizi_playlib_PlayJniProxy_native_1resume(JNIEnv *env, jobject instance)
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_zizi_playlib_PlayJniProxy_native_1pause(JNIEnv *env, jobject instance) {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->pause();
         NotifyApplication::getIns()->notifyPaused(MAIN_THREAD);
     }
@@ -90,7 +90,7 @@ Java_com_zizi_playlib_PlayJniProxy_native_1stop(JNIEnv *env, jobject instance) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_zizi_playlib_PlayJniProxy_native_1seek(JNIEnv *env, jobject instance, jint progress) {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->seek(progress);
         NotifyApplication::getIns()->notifySeeked(MAIN_THREAD, progress);
     }
@@ -107,7 +107,7 @@ Java_com_zizi_playlib_PlayJniProxy_native_1duration(JNIEnv *env, jobject instanc
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_zizi_playlib_PlayJniProxy_native_1volume(JNIEnv *env, jobject instance, jint percent) {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->setVolume(percent);
         NotifyApplication::getIns()->notifyVolumeModified(MAIN_THREAD, percent);
     }
@@ -116,7 +116,7 @@ Java_com_zizi_playlib_PlayJniProxy_native_1volume(JNIEnv *env, jobject instance,
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_zizi_playlib_PlayJniProxy_native_1pitch(JNIEnv *env, jobject instance, jfloat pitch) {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->setPitch(pitch);
         NotifyApplication::getIns()->notifyPitchModified(MAIN_THREAD, pitch);
     }
@@ -125,7 +125,7 @@ Java_com_zizi_playlib_PlayJniProxy_native_1pitch(JNIEnv *env, jobject instance, 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_zizi_playlib_PlayJniProxy_native_1speed(JNIEnv *env, jobject instance, jfloat speed) {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->setSpeed(speed);
         NotifyApplication::getIns()->notifySpeedModified(MAIN_THREAD, speed);
     }
@@ -143,7 +143,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_zizi_playlib_PlayJniProxy_native_1channel_1switch(JNIEnv *env, jobject instance,
                                                              jint channel) {
-    if (NULL != pAudioProccessor) {
+    if (nullptr != pAudioProccessor) {
         pAudioProccessor->switchChannel(channel);
         NotifyApplication::getIns()->notifyChannelLayoutModified(MAIN_THREAD, channel);
     }

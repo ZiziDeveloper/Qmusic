@@ -27,19 +27,19 @@ using namespace soundtouch;
 class AudioProccessor {
 private:
     //opensl 引擎
-    SLObjectItf engineObj = NULL;
-    SLEngineItf engineItf = NULL;
+    SLObjectItf engineObj;
+    SLEngineItf engineItf;
 
     //混音器
-    SLObjectItf  outputMixObj = NULL;
-    SLEnvironmentalReverbItf outputMixEnvironmentalReverb = NULL;
-    SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
+    SLObjectItf  outputMixObj;
+    SLEnvironmentalReverbItf outputMixEnvironmentalReverb;
+    SLEnvironmentalReverbSettings reverbSettings;
 
     //opensl 播放pcm接口
-    SLObjectItf pcmPlayObj = NULL;
-    SLPlayItf  pcmPlayItf = NULL;
-    SLVolumeItf pcmVolumeItf = NULL;
-    SLMuteSoloItf  pcmMuteSoloItf = NULL;
+    SLObjectItf pcmPlayObj;
+    SLPlayItf  pcmPlayItf;
+    SLVolumeItf pcmVolumeItf;
+    SLMuteSoloItf  pcmMuteSoloItf;
 
 
 public:
@@ -49,11 +49,11 @@ public:
     pthread_t startDecodeThread;
     pthread_mutex_t adapterPcmMutex;
     //播放缓冲队列
-    SLAndroidSimpleBufferQueueItf  pcmBufQueueItf = NULL;
-    uint8_t *pOutBuf = NULL;
+    SLAndroidSimpleBufferQueueItf  pcmBufQueueItf;
+    uint8_t *pOutBuf;
 
-    SoundTouch* soundTouch = NULL;
-    SAMPLETYPE* soundTouchBuffer = NULL;
+    SoundTouch* soundTouch;
+    SAMPLETYPE* soundTouchBuffer;
 
 private:
     void setPlayState(int state);
