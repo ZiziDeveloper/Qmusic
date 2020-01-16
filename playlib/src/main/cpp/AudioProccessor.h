@@ -43,7 +43,7 @@ private:
 
 
 public:
-    std::shared_ptr<AudioCoder> pAudioCoder;
+    std::unique_ptr<AudioCoder> pAudioCoder;
     //开始播放线程
     pthread_t startPlayThread;
     pthread_t startDecodeThread;
@@ -52,7 +52,7 @@ public:
     SLAndroidSimpleBufferQueueItf  pcmBufQueueItf;
     uint8_t *pOutBuf;
 
-    SoundTouch* soundTouch;
+    std::unique_ptr<SoundTouch> soundTouch;
     SAMPLETYPE* soundTouchBuffer;
 
 private:

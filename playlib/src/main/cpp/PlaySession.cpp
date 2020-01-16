@@ -32,11 +32,18 @@ PlaySession::PlaySession(){
     pUrl = nullptr;
 }
 
-PlaySession *PlaySession::getIns() {
-    return p;
+PlaySession::~PlaySession() {
+
 }
 
-PlaySession* PlaySession::p = new PlaySession();
+/**
+ * c++ 11简洁版单例实现
+ * @return
+ */
+PlaySession& PlaySession::getIns() {
+    static PlaySession instance;
+    return instance;
+}
 
 
 char *PlaySession::getUrl() const {

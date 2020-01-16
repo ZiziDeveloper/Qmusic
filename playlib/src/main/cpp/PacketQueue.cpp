@@ -25,7 +25,7 @@ int PacketQueue::putAvPacket(AVPacket *packet) {
 
 int PacketQueue::getAvPacket(AVPacket *packet) {
     pthread_mutex_lock(&mMutex);
-    while (!PlaySession::getIns()->bExit) {
+    while (!PlaySession::getIns().bExit) {
         if (mQueue.size() > 0) {
             AVPacket* avPacket = mQueue.front();
             if (av_packet_ref(packet, avPacket) == 0) {

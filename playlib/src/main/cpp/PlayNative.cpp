@@ -39,14 +39,14 @@ extern "C" {
                         jstring source_, jint volume, jint layout) {
         const char *source = env->GetStringUTFChars(source_, 0);
         int length = env->GetStringLength(source_);
-        PlaySession::getIns()->allocUrl((char *) source, length);
+        PlaySession::getIns().allocUrl((char *) source, length);
         NotifyApplication::getIns()->init(javaVM, env, &instance);
         nativeStop();
         if (nullptr == pAudioProccessor) {
             pAudioProccessor = new AudioProccessor;
         }
         pAudioProccessor->prepare();
-        LOGI("native_prepare url : %s ", PlaySession::getIns()->getUrl());
+        LOGI("native_prepare url : %s ", PlaySession::getIns().getUrl());
         env->ReleaseStringUTFChars(source_, source);
     }
 

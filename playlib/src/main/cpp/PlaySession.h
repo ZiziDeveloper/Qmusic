@@ -8,41 +8,93 @@ extern "C" {
 #include <libavutil/rational.h>
 #include <libavutil/samplefmt.h>
 };
-
+/**
+ * 播放期间的状态session
+ */
 class PlaySession {
 private:
     PlaySession();
-    static PlaySession *p;
+    ~PlaySession();
+    PlaySession(const PlaySession&);
+    PlaySession&operator=(const PlaySession&);
     char* pUrl;
 public:
+    /**
+     * 是否已经停止播放
+     */
     bool bExit;
+    /**
+     * 是否正在拖动播放进度
+     */
     bool bSeeking;
+    /**
+     * 是否正在加载
+     */
     bool bLoading;
+    /**
+     * 音量
+     */
     int volume;
+    /**
+     * 播放状态
+     */
     int playState;
+    /**
+     * 输出音频的声道布局
+     */
     int64_t outChannelLayout;
+    /**
+     * 输入音频的声道布局
+     */
     int64_t inChannelLayout;
+
+    /**
+     * 输出采样格式
+     */
     AVSampleFormat outFmt;
+    /**
+     * 输入采样格式
+     */
     AVSampleFormat inFmt;
-    //播放器输出采样率
+    /**
+     * 播放器输出采样率
+     */
     int outSmapleRate;
-    //输入音源的采样率
+    /**
+     * 输入音源的采样率
+     */
     int inSampleRate;
-    //一帧包含的样本数
+    /**
+     * 一帧包含的样本数
+     */
     int numSampleAvFrame;
 
-    //音频时长
+    /**
+     * 音频时长
+     */
     int64_t duration;
     AVRational timeBase;
-    //当前播放时长
+    /**
+     * 当前播放时长
+     */
     double currentClock;
-    //最近一次的播放时长
+    /**
+     * 最近一次的播放时长
+     */
     double lastClock;
 
+    /**
+     * 播放音调
+     */
     float pitch;
+    /**
+     * 播放速度
+     */
     float speed;
 
-    //上报到应用层的最短时间间隔
+    /**
+     * 上报到应用层的最短时间间隔
+     */
     static constexpr double TIME_INTERVAL = 0.1;
 
     /**
@@ -58,7 +110,7 @@ public:
 private:
     void releaseUrl();
 public:
-    static PlaySession* getIns();
+    static PlaySession& getIns();
 
     char *getUrl() const;
 

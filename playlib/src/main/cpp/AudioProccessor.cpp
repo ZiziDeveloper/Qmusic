@@ -4,7 +4,7 @@
 
 #include "AudioProccessor.h"
 
-AudioProccessor::AudioProccessor() : reverbSettings(SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR) {
+AudioProccessor::AudioProccessor() : reverbSettings(SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR), pAudioCoder(new AudioCoder) {
     engineObj = nullptr;
     engineItf = nullptr;
 
@@ -17,14 +17,8 @@ AudioProccessor::AudioProccessor() : reverbSettings(SL_I3DL2_ENVIRONMENT_PRESET_
     pcmMuteSoloItf = nullptr;
 
 
-    pAudioCoder  = std::shared_ptr<AudioCoder>( new AudioCoder());
-
-
     pcmBufQueueItf = nullptr;
     pOutBuf = nullptr;
-
-    soundTouch = nullptr;
-    soundTouchBuffer = nullptr;
 
     pthread_mutex_init(&adapterPcmMutex, nullptr);
 }
@@ -59,29 +53,29 @@ void AudioProccessor::start() {
     LOGI("AudioProccessor::start");
 
     allocSoundTouch();
-    PlaySession::getIns()->bExit = false;
-    PlaySession::getIns()->playState = PlaySession::PLAY_STATE_PLAYING;
+    PlaySession::getIns().bExit = false;
+    PlaySession::getIns().playState = PlaySession::PLAY_STATE_PLAYING;
     pthread_create(&startDecodeThread, nullptr, startDecodeRunnable, this);
     pthread_create(&startPlayThread, nullptr, startPlayRunnable, this);
 }
 
 void AudioProccessor::pause() {
     LOGI("AudioProccessor::pause");
-    PlaySession::getIns()->playState = PlaySession::PLAY_STATE_PAUSED;
-    setPlayState(PlaySession::getIns()->playState);
+    PlaySession::getIns().playState = PlaySession::PLAY_STATE_PAUSED;
+    setPlayState(PlaySession::getIns().playState);
 }
 
 void AudioProccessor::resume() {
     LOGI("AudioProccessor::resume");
-    PlaySession::getIns()->playState = PlaySession::PLAY_STATE_PLAYING;
-    setPlayState(PlaySession::getIns()->playState);
+    PlaySession::getIns().playState = PlaySession::PLAY_STATE_PLAYING;
+    setPlayState(PlaySession::getIns().playState);
 }
 
 void AudioProccessor::stop() {
     LOGI("AudioProccessor::stop");
-    PlaySession::getIns()->bExit = true;
-    PlaySession::getIns()->playState = PlaySession::PLAY_STATE_STOPPED;
-    setPlayState(PlaySession::getIns()->playState);
+    PlaySession::getIns().bExit = true;
+    PlaySession::getIns().playState = PlaySession::PLAY_STATE_STOPPED;
+    setPlayState(PlaySession::getIns().playState);
     if (nullptr != pAudioCoder) {
         pAudioCoder->stop();
     }
@@ -100,7 +94,7 @@ void AudioProccessor::setVolume(int percent) {
     if (nullptr == pcmVolumeItf) {
         return;
     }
-    PlaySession::getIns()->volume = percent;
+    PlaySession::getIns().volume = percent;
     if (percent > 30)
     {
         (*pcmVolumeItf)->SetVolumeLevel(pcmVolumeItf, (100 - percent) * -20);
@@ -157,15 +151,15 @@ void AudioProccessor::switchChannel(int64_t channel) {
 
 void AudioProccessor::setPitch(float pitch) {
     if (nullptr != soundTouch) {
-        PlaySession::getIns()->pitch = pitch;
-        soundTouch->setPitch(PlaySession::getIns()->pitch);
+        PlaySession::getIns().pitch = pitch;
+        soundTouch->setPitch(PlaySession::getIns().pitch);
     }
 }
 
 void AudioProccessor::setSpeed(float speed) {
     if (nullptr != soundTouch) {
-        PlaySession::getIns()->speed = speed;
-        soundTouch->setTempo(PlaySession::getIns()->speed);
+        PlaySession::getIns().speed = speed;
+        soundTouch->setTempo(PlaySession::getIns().speed);
     }
 }
 
@@ -235,18 +229,18 @@ void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
     if (nullptr != pPlayer) {
         int soundTouchReceiveNum = pPlayer->adapterPcmToSoundTouch();
         if (soundTouchReceiveNum > 0) {
-            PlaySession::getIns()->currentClock += soundTouchReceiveNum / (double)(PlaySession::getIns()->inSampleRate * 2 * 2);
-            if (PlaySession::getIns()->currentClock - PlaySession::getIns()->lastClock >= PlaySession::TIME_INTERVAL) {
-                PlaySession::getIns()->lastClock = PlaySession::getIns()->currentClock;
+            PlaySession::getIns().currentClock += soundTouchReceiveNum / (double)(PlaySession::getIns().inSampleRate * 2 * 2);
+            if (PlaySession::getIns().currentClock - PlaySession::getIns().lastClock >= PlaySession::TIME_INTERVAL) {
+                PlaySession::getIns().lastClock = PlaySession::getIns().currentClock;
                 //TODO[truyayong] 时间回调到应用层
 //                LOGE("[truyayong] current : %f, tol : %d", PlaySession::getIns()->currentClock
 //                , PlaySession::getIns()->duration);
-                NotifyApplication::getIns()->notifyProgress(CHILD_THREAD, PlaySession::getIns()->currentClock, PlaySession::getIns()->duration);
+                NotifyApplication::getIns()->notifyProgress(CHILD_THREAD, PlaySession::getIns().currentClock, PlaySession::getIns().duration);
             }
         }
         (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->soundTouchBuffer
-                , soundTouchReceiveNum * (PlaySession::getIns()->getoutChannelLayoutBytes()
-                                          * av_get_bytes_per_sample(PlaySession::getIns()->outFmt)));
+                , soundTouchReceiveNum * (PlaySession::getIns().getoutChannelLayoutBytes()
+                                          * av_get_bytes_per_sample(PlaySession::getIns().outFmt)));
     }
 }
 
@@ -255,7 +249,7 @@ int AudioProccessor::adapterPcmToSoundTouch() {
     bool finished = true;
     int pcmSize = 0;
     int receiveNum;
-    while(!PlaySession::getIns()->bExit) {
+    while(!PlaySession::getIns().bExit) {
         pOutBuf = nullptr;
         if (finished) {
             pcmSize = pAudioCoder->reSampleAudio((void **)&pOutBuf);
@@ -263,10 +257,10 @@ int AudioProccessor::adapterPcmToSoundTouch() {
                 for (int i = 0; i < pcmSize / 2 + 1; i++) {
                     soundTouchBuffer[i] = (pOutBuf[i * 2] | ((pOutBuf[i * 2 + 1]) << 8));
                 }
-                soundTouch->putSamples(soundTouchBuffer, PlaySession::getIns()->numSampleAvFrame);
+                soundTouch->putSamples(soundTouchBuffer, PlaySession::getIns().numSampleAvFrame);
                 receiveNum = soundTouch->receiveSamples(
-                        soundTouchBuffer, pcmSize / (PlaySession::getIns()->getoutChannelLayoutBytes()
-                                                     * av_get_bytes_per_sample(PlaySession::getIns()->outFmt)));
+                        soundTouchBuffer, pcmSize / (PlaySession::getIns().getoutChannelLayoutBytes()
+                                                     * av_get_bytes_per_sample(PlaySession::getIns().outFmt)));
             } else {
                 soundTouch->flush();
             }
@@ -277,8 +271,8 @@ int AudioProccessor::adapterPcmToSoundTouch() {
             } else {
                 if (nullptr == pOutBuf) {
                     receiveNum = soundTouch->receiveSamples(
-                            soundTouchBuffer, pcmSize / (PlaySession::getIns()->getoutChannelLayoutBytes()
-                                                         * av_get_bytes_per_sample(PlaySession::getIns()->outFmt)));
+                            soundTouchBuffer, pcmSize / (PlaySession::getIns().getoutChannelLayoutBytes()
+                                                         * av_get_bytes_per_sample(PlaySession::getIns().outFmt)));
                     if (receiveNum == 0) {
                         finished = true;
                         continue;
@@ -301,7 +295,7 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     SLDataFormat_PCM pcm = {
             SL_DATAFORMAT_PCM,//播放pcm格式的数据
             2,//2个声道（立体声）
-            static_cast<SLuint32>(adapterSLSampleRate(PlaySession::getIns()->outSmapleRate)),//44100hz的频率
+            static_cast<SLuint32>(adapterSLSampleRate(PlaySession::getIns().outSmapleRate)),//44100hz的频率
             SL_PCMSAMPLEFORMAT_FIXED_16,//位数 16位
             SL_PCMSAMPLEFORMAT_FIXED_16,//和位数一致就行
             SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,//立体声（前左前右）
@@ -363,9 +357,9 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     methodBufferCallBack(pcmBufQueueItf, this);
 
     //TODO[truyayong] 设置播放的初始状态 音量，声道，播放状态等
-    setVolume(PlaySession::getIns()->volume);
-    switchChannel(PlaySession::getIns()->outChannelLayout);
-    setPlayState(PlaySession::getIns()->playState);
+    setVolume(PlaySession::getIns().volume);
+    switchChannel(PlaySession::getIns().outChannelLayout);
+    setPlayState(PlaySession::getIns().playState);
     NotifyApplication::getIns()->notifyStarted(CHILD_THREAD);
     return true;
 }
@@ -460,21 +454,17 @@ void AudioProccessor::releaseSL() {
 }
 
 void AudioProccessor::allocSoundTouch() {
-    soundTouch = new SoundTouch();
-    soundTouch->setSampleRate(PlaySession::getIns()->outSmapleRate);
-    soundTouch->setChannels(PlaySession::getIns()->getoutChannelLayoutBytes());
-    soundTouch->setPitch(PlaySession::getIns()->pitch);
-    soundTouch->setTempo(PlaySession::getIns()->speed);
+    soundTouch.reset(new SoundTouch());
+    soundTouch->setSampleRate(PlaySession::getIns().outSmapleRate);
+    soundTouch->setChannels(PlaySession::getIns().getoutChannelLayoutBytes());
+    soundTouch->setPitch(PlaySession::getIns().pitch);
+    soundTouch->setTempo(PlaySession::getIns().speed);
     soundTouchBuffer = (SAMPLETYPE*) av_malloc(
-            PlaySession::getIns()->outSmapleRate
-            * PlaySession::getIns()->getoutChannelLayoutBytes() * av_get_bytes_per_sample(PlaySession::getIns()->outFmt));
+            PlaySession::getIns().outSmapleRate
+            * PlaySession::getIns().getoutChannelLayoutBytes() * av_get_bytes_per_sample(PlaySession::getIns().outFmt));
 }
 
 void AudioProccessor::freeSoundTouch() {
-    if (nullptr != soundTouch) {
-        delete  soundTouch;
-        soundTouch = nullptr;
-    }
     if (nullptr != soundTouchBuffer) {
         av_free(soundTouchBuffer);
         soundTouchBuffer = nullptr;
