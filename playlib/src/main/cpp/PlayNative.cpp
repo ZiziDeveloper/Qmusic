@@ -17,7 +17,7 @@ void nativeStop() {
         delete  pAudioProccessor;
         pAudioProccessor = nullptr;
     }
-    NotifyApplication::getIns()->notifyStopped(MAIN_THREAD);
+    NotifyApplication::getIns().notifyStopped(MAIN_THREAD);
 }
 
 /***********************************************************************
@@ -40,7 +40,7 @@ extern "C" {
         const char *source = env->GetStringUTFChars(source_, 0);
         int length = env->GetStringLength(source_);
         PlaySession::getIns().allocUrl((char *) source, length);
-        NotifyApplication::getIns()->init(javaVM, env, &instance);
+        NotifyApplication::getIns().init(javaVM, env, &instance);
         nativeStop();
         if (nullptr == pAudioProccessor) {
             pAudioProccessor = new AudioProccessor;
@@ -69,7 +69,7 @@ extern "C" {
     void nativeResume(JNIEnv *env, jobject instance) {
         if (nullptr != pAudioProccessor) {
             pAudioProccessor->resume();
-            NotifyApplication::getIns()->notifyResumed(MAIN_THREAD);
+            NotifyApplication::getIns().notifyResumed(MAIN_THREAD);
         }
     }
 
@@ -81,7 +81,7 @@ extern "C" {
     void nativePause(JNIEnv *env, jobject instance) {
         if (nullptr != pAudioProccessor) {
             pAudioProccessor->pause();
-            NotifyApplication::getIns()->notifyPaused(MAIN_THREAD);
+            NotifyApplication::getIns().notifyPaused(MAIN_THREAD);
         }
     }
 
@@ -103,7 +103,7 @@ extern "C" {
     void nativeSeek(JNIEnv *env, jobject instance, jint progress) {
         if (nullptr != pAudioProccessor) {
             pAudioProccessor->seek(progress);
-            NotifyApplication::getIns()->notifySeeked(MAIN_THREAD, progress);
+            NotifyApplication::getIns().notifySeeked(MAIN_THREAD, progress);
         }
     }
 
@@ -127,7 +127,7 @@ extern "C" {
     void nativeVolume(JNIEnv *env, jobject instance, jint percent) {
         if (nullptr != pAudioProccessor) {
             pAudioProccessor->setVolume(percent);
-            NotifyApplication::getIns()->notifyVolumeModified(MAIN_THREAD, percent);
+            NotifyApplication::getIns().notifyVolumeModified(MAIN_THREAD, percent);
         }
     }
 
@@ -140,7 +140,7 @@ extern "C" {
     void nativeChannelSwitch(JNIEnv *env, jobject instance,jint channel) {
         if (nullptr != pAudioProccessor) {
             pAudioProccessor->switchChannel(channel);
-            NotifyApplication::getIns()->notifyChannelLayoutModified(MAIN_THREAD, channel);
+            NotifyApplication::getIns().notifyChannelLayoutModified(MAIN_THREAD, channel);
         }
     }
 
@@ -153,7 +153,7 @@ extern "C" {
     void nativePitch(JNIEnv *env, jobject instance, jfloat pitch) {
         if (nullptr != pAudioProccessor) {
             pAudioProccessor->setPitch(pitch);
-            NotifyApplication::getIns()->notifyPitchModified(MAIN_THREAD, pitch);
+            NotifyApplication::getIns().notifyPitchModified(MAIN_THREAD, pitch);
         }
     }
 
@@ -166,7 +166,7 @@ extern "C" {
     void nativeSpeed(JNIEnv *env, jobject instance, jfloat speed) {
         if (nullptr != pAudioProccessor) {
             pAudioProccessor->setSpeed(speed);
-            NotifyApplication::getIns()->notifySpeedModified(MAIN_THREAD, speed);
+            NotifyApplication::getIns().notifySpeedModified(MAIN_THREAD, speed);
         }
     }
 

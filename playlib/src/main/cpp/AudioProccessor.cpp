@@ -169,19 +169,19 @@ bool AudioProccessor::prepareSLEngien() {
     res = slCreateEngine(&engineObj, 0, 0, 0, 0, 0);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("slCreateEngine fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "slCreateEngine fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "slCreateEngine fail");
         return false;
     }
     res = (*engineObj)->Realize(engineObj, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("engineObj Realize fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "engineObj Realize fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "engineObj Realize fail");
         return false;
     }
     res = (*engineObj)->GetInterface(engineObj, SL_IID_ENGINE, &engineItf);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("engineObj GetInterface fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "engineObj GetInterface fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "engineObj GetInterface fail");
         return false;
     }
     return true;
@@ -195,27 +195,27 @@ bool AudioProccessor::prepareSLOutputMixAndPlay() {
     res = (*engineItf)->CreateOutputMix(engineItf, &outputMixObj, MIX_ITF_NUM, mids, mreq);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("engineItf CreateOutputMix fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "engineItf CreateOutputMix fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "engineItf CreateOutputMix fail");
         return false;
     }
     res = (*outputMixObj)->Realize(outputMixObj, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("outputMixObj Realize fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "outputMixObj Realize fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "outputMixObj Realize fail");
         return false;
     }
     res = (*outputMixObj)->GetInterface(outputMixObj
             , SL_IID_ENVIRONMENTALREVERB, &outputMixEnvironmentalReverb);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("outputMixObj GetInterface fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "outputMixObj GetInterface fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "outputMixObj GetInterface fail");
         return false;
     }
     res = (*outputMixEnvironmentalReverb)->SetEnvironmentalReverbProperties(
             outputMixEnvironmentalReverb, &reverbSettings);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("outputMixEnvironmentalReverb SetEnvironmentalReverbProperties fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "outputMixEnvironmentalReverb SetEnvironmentalReverbProperties fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "outputMixEnvironmentalReverb SetEnvironmentalReverbProperties fail");
         return false;
     }
     SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX, outputMixObj};
@@ -235,7 +235,7 @@ void methodBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context) {
                 //TODO[truyayong] 时间回调到应用层
 //                LOGE("[truyayong] current : %f, tol : %d", PlaySession::getIns()->currentClock
 //                , PlaySession::getIns()->duration);
-                NotifyApplication::getIns()->notifyProgress(CHILD_THREAD, PlaySession::getIns().currentClock, PlaySession::getIns().duration);
+                NotifyApplication::getIns().notifyProgress(CHILD_THREAD, PlaySession::getIns().currentClock, PlaySession::getIns().duration);
             }
         }
         (*pPlayer->pcmBufQueueItf)->Enqueue(pPlayer->pcmBufQueueItf, (char*)pPlayer->soundTouchBuffer
@@ -309,41 +309,41 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     res = (*engineItf)->CreateAudioPlayer(engineItf, &pcmPlayObj, &slDataSource, &audioSink, PLAY_ITF_NUM, ids, req);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("engineItf CreateAudioPlayer fail code : %d str : %s", res, ErrUtil::errLog(res));
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "engineItf CreateAudioPlayer fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "engineItf CreateAudioPlayer fail");
         return false;
     }
     res = (*pcmPlayObj)->Realize(pcmPlayObj, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("pcmPlayObj Realize fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "pcmPlayObj Realize fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "pcmPlayObj Realize fail");
         return false;
     }
 
     res = (*pcmPlayObj)->GetInterface(pcmPlayObj, SL_IID_PLAY, &pcmPlayItf);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("pcmPlayObj GetInterface pcmPlayItf fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "pcmPlayObj GetInterface pcmPlayItf fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "pcmPlayObj GetInterface pcmPlayItf fail");
         return false;
     }
 
     res = (*pcmPlayObj)->GetInterface(pcmPlayObj, SL_IID_VOLUME, &pcmVolumeItf);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("pcmPlayObj GetInterface pcmVolumeItf fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "pcmPlayObj GetInterface pcmVolumeItf fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "pcmPlayObj GetInterface pcmVolumeItf fail");
         return false;
     }
 
     res = (*pcmPlayObj)->GetInterface(pcmPlayObj, SL_IID_MUTESOLO, &pcmMuteSoloItf);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("pcmPlayObj GetInterface pcmMuteSoloItf fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "pcmPlayObj GetInterface pcmMuteSoloItf fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "pcmPlayObj GetInterface pcmMuteSoloItf fail");
         return false;
     }
 
     res = (*pcmPlayObj)->GetInterface(pcmPlayObj, SL_IID_BUFFERQUEUE, &pcmBufQueueItf);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("pcmPlayObj GetInterface pcmBufQueueItf fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "pcmPlayObj GetInterface pcmBufQueueItf fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "pcmPlayObj GetInterface pcmBufQueueItf fail");
         return false;
     }
 
@@ -351,7 +351,7 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     res = (*pcmBufQueueItf)->RegisterCallback(pcmBufQueueItf, methodBufferCallBack, this);
     if (SL_RESULT_SUCCESS != res) {
         LOGE("pcmBufQueueItf RegisterCallback fail code : %d", res);
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, res, "pcmBufQueueItf RegisterCallback fail");
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, res, "pcmBufQueueItf RegisterCallback fail");
         return false;
     }
     methodBufferCallBack(pcmBufQueueItf, this);
@@ -360,7 +360,7 @@ bool AudioProccessor::prepareSLPlay(SLDataSink &audioSink) {
     setVolume(PlaySession::getIns().volume);
     switchChannel(PlaySession::getIns().outChannelLayout);
     setPlayState(PlaySession::getIns().playState);
-    NotifyApplication::getIns()->notifyStarted(CHILD_THREAD);
+    NotifyApplication::getIns().notifyStarted(CHILD_THREAD);
     return true;
 }
 

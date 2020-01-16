@@ -50,7 +50,7 @@ void AudioCoder::prepareDecoder() {
             , PlaySession::getIns().getUrl(), nullptr, nullptr);
     if (ret != 0) {
         LOGE("AudioCoder::prepareDecoder avformat_open_input err : %s, url : %s", ErrUtil::errLog(ret), PlaySession::getIns().getUrl());
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
         PlaySession::getIns().bExit = true;
         pthread_mutex_unlock(&prepareDecodeMutex);
         return;
@@ -59,7 +59,7 @@ void AudioCoder::prepareDecoder() {
     ret = avformat_find_stream_info(pAVFormatCtx, nullptr);
     if (ret < 0) {
         LOGE("AudioCoder::prepareDecoder avformat_find_stream_info err : %s", ErrUtil::errLog(ret));
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
         PlaySession::getIns().bExit = true;
         pthread_mutex_unlock(&prepareDecodeMutex);
         return;
@@ -78,7 +78,7 @@ void AudioCoder::prepareDecoder() {
     AVCodec* codec = avcodec_find_decoder(pCodecPara->codec_id);
     if (!codec) {
         LOGE("AudioCoder::prepareDecoder avcodec_find_decoder is null ");
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
         PlaySession::getIns().bExit = true;
         pthread_mutex_unlock(&prepareDecodeMutex);
         return;
@@ -87,7 +87,7 @@ void AudioCoder::prepareDecoder() {
     pAVCodecCtx = avcodec_alloc_context3(codec);
     if (!pAVCodecCtx) {
         LOGE("AudioCoder::prepareDecoder avcodec_alloc_context3 is null ");
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
         PlaySession::getIns().bExit = true;
         pthread_mutex_unlock(&prepareDecodeMutex);
         return;
@@ -96,7 +96,7 @@ void AudioCoder::prepareDecoder() {
     ret = avcodec_parameters_to_context(pAVCodecCtx, pCodecPara);
     if (ret < 0) {
         LOGE("AudioCoder::prepareDecoder avcodec_parameters_from_context err : %s", ErrUtil::errLog(ret));
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
         PlaySession::getIns().bExit = true;
         pthread_mutex_unlock(&prepareDecodeMutex);
         return;
@@ -105,13 +105,13 @@ void AudioCoder::prepareDecoder() {
     ret = avcodec_open2(pAVCodecCtx, codec, nullptr);
     if (ret < 0) {
         LOGE("AudioCoder::prepareDecoder avcodec_open2 err : %s", ErrUtil::errLog(ret));
-        NotifyApplication::getIns()->notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
+        NotifyApplication::getIns().notifyError(CHILD_THREAD, ret, ErrUtil::errLog(ret));
         PlaySession::getIns().bExit = true;
         pthread_mutex_unlock(&prepareDecodeMutex);
         return;
     }
     pthread_mutex_unlock(&prepareDecodeMutex);
-    NotifyApplication::getIns()->notifyPrepared(CHILD_THREAD);
+    NotifyApplication::getIns().notifyPrepared(CHILD_THREAD);
 }
 
 void AudioCoder::start() {
@@ -171,14 +171,14 @@ int AudioCoder::reSampleAudio(void **pcmBuf) {
         if (pQueue->size() == 0) {
             if (!PlaySession::getIns().bLoading) {
                 PlaySession::getIns().bLoading = true;
-                NotifyApplication::getIns()->notifyLoad(true);
+                NotifyApplication::getIns().notifyLoad(true);
             }
             av_usleep(1000 * 100);
             continue;
         } else {
             if (PlaySession::getIns().bLoading) {
                 PlaySession::getIns().bLoading = false;
-                NotifyApplication::getIns()->notifyLoad(false);
+                NotifyApplication::getIns().notifyLoad(false);
             }
         }
 

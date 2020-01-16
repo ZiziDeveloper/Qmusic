@@ -6,8 +6,15 @@
 
 NotifyApplication::NotifyApplication() {}
 
-NotifyApplication* NotifyApplication::getIns() {
-    return p;
+NotifyApplication::~NotifyApplication() {}
+
+NotifyApplication::NotifyApplication(const NotifyApplication&) {}
+
+NotifyApplication& NotifyApplication::operator=(const NotifyApplication&){}
+
+NotifyApplication& NotifyApplication::getIns() {
+    static NotifyApplication instance;
+    return instance;
 }
 
 NotifyApplication* NotifyApplication::p = new NotifyApplication();

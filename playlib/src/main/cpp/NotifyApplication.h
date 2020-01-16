@@ -37,8 +37,11 @@ private:
     jmethodID jmid_error;
 private:
     NotifyApplication();
+    ~NotifyApplication();
+    NotifyApplication(const NotifyApplication&);
+    NotifyApplication& operator=(const NotifyApplication&);
 public:
-    static NotifyApplication* getIns();
+    static NotifyApplication& getIns();
     void init(_JavaVM *jvm, JNIEnv *jenv, jobject* pObj);
     void notifyPrepared(int type);
     void notifyStarted(int type);

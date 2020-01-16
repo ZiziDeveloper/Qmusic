@@ -16,7 +16,7 @@ private:
     PlaySession();
     ~PlaySession();
     PlaySession(const PlaySession&);
-    PlaySession&operator=(const PlaySession&);
+    PlaySession& operator=(const PlaySession&);
     char* pUrl;
 public:
     /**
