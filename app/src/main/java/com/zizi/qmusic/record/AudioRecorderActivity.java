@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AudioRecorderActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener {
+public class AudioRecorderActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, View.OnClickListener {
 
     private String filePath;
     private AudioSource source;
@@ -120,9 +120,12 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         contentLayout = (RelativeLayout) findViewById(R.id.content);
         statusView = (TextView) findViewById(R.id.status);
         timerView = (TextView) findViewById(R.id.timer);
-        restartView = (ImageButton) findViewById(R.id.restart);
-        recordView = (ImageButton) findViewById(R.id.record);
-        playView = (ImageButton) findViewById(R.id.play);
+        restartView = (ImageButton) findViewById(R.id.btn_restart);
+        restartView.setOnClickListener(this);
+        recordView = (ImageButton) findViewById(R.id.btn_record);
+        recordView.setOnClickListener(this);
+        playView = (ImageButton) findViewById(R.id.btn_play);
+        playView.setOnClickListener(this);
 
         contentLayout.setBackgroundColor(Util.getDarkerColor(color));
         restartView.setVisibility(View.INVISIBLE);
@@ -232,7 +235,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     public void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         if(autoStart && !isRecording){
-            toggleRecording(null);
+            clickRecording();
         }
     }
 
@@ -243,13 +246,13 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
     @Override
     protected void onPause() {
-        restartRecording(null);
+        clickRestart();
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        restartRecording(null);
+        clickRestart();
         setResult(RESULT_CANCELED);
         super.onDestroy();
     }
@@ -274,8 +277,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         int i = item.getItemId();
         if (i == android.R.id.home) {
             finish();
-        } else if (i == R.id.action_save) {
-            selectAudio();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -286,28 +287,23 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         stopPlaying();
     }
 
-    private void selectAudio() {
-        stopRecording();
-        setResult(RESULT_OK);
-        finish();
-    }
 
-    public void toggleRecording(View v) {
+    public void clickRecording() {
         stopPlaying();
         Util.wait(100, new Runnable() {
             @Override
             public void run() {
                 if (isRecording) {
-                    pauseRecording();
+                    stopRecording();
                 } else {
-                    resumeRecording();
+                    startRecording();
                 }
             }
         });
     }
 
-    public void togglePlaying(View v){
-        pauseRecording();
+    public void clickPlaying(){
+        stopRecording();
         Util.wait(100, new Runnable() {
             @Override
             public void run() {
@@ -320,7 +316,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         });
     }
 
-    public void restartRecording(View v){
+    public void clickRestart(){
         if(isRecording) {
             stopRecording();
         } else if(isPlaying()) {
@@ -337,7 +333,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         playerSecondsElapsed = 0;
     }
 
-    private void resumeRecording() {
+    private void startRecording() {
         isRecording = true;
         saveMenuItem.setVisible(false);
         statusView.setText(R.string.aar_recording);
@@ -369,7 +365,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         startTimer();
     }
 
-    private void pauseRecording() {
+    private void stopRecording() {
         isRecording = false;
         if(!isFinishing()) {
             saveMenuItem.setVisible(true);
@@ -384,23 +380,16 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
 
         stopTimer();
-        waveCanvas.Stop();
-        waveCanvas = null;
+        if (waveCanvas != null) {
+            waveCanvas.Stop();
+            waveCanvas = null;
+        }
         initWaveView();
     }
 
-    private void stopRecording(){
-
-        recorderSecondsElapsed = 0;
-
-        stopTimer();
-
-
-    }
 
     private void startPlaying(){
         try {
-            stopRecording();
             player = new MediaPlayer();
             player.setDataSource(filePath);
             player.prepare();
@@ -474,5 +463,16 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
                 }
             }
         });
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.btn_record) {
+            clickRecording();
+        } else if (v.getId() == R.id.btn_play) {
+            clickPlaying();
+        } else if (v.getId() == R.id.btn_restart) {
+            clickRestart();
+        }
     }
 }

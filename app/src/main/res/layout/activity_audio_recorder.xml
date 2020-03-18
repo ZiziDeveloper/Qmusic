@@ -56,22 +56,21 @@
         android:layout_alignParentBottom="true">
 
         <ImageButton
-            android:id="@+id/restart"
+            android:id="@+id/btn_restart"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/record"
-            android:layout_toLeftOf="@+id/record"
+            android:layout_toStartOf="@+id/btn_record"
+            android:layout_toLeftOf="@+id/btn_record"
             android:layout_marginTop="50dp"
             android:padding="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/aar_ic_restart"
-            android:onClick="restartRecording"
             android:visibility="invisible"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 
         <ImageButton
-            android:id="@+id/record"
+            android:id="@+id/btn_record"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_centerInParent="true"
@@ -80,21 +79,19 @@
             android:padding="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_record"
-            android:onClick="toggleRecording"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 
         <ImageButton
-            android:id="@+id/play"
+            android:id="@+id/btn_play"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/record"
-            android:layout_toRightOf="@+id/record"
+            android:layout_toEndOf="@+id/btn_record"
+            android:layout_toRightOf="@+id/btn_record"
             android:layout_marginTop="50dp"
             android:padding="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_play"
-            android:onClick="togglePlaying"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 
     </RelativeLayout>
