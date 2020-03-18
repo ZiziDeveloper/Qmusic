@@ -45,7 +45,6 @@ import java.util.TimerTask;
 
 public class AudioRecorderActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, View.OnClickListener {
 
-    private String filePath;
     private AudioSource source;
     private AudioChannel channel;
     private AudioSampleRate sampleRate;
@@ -84,7 +83,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         setContentView(R.layout.activity_audio_recorder);
 
         if(savedInstanceState != null) {
-            filePath = savedInstanceState.getString(AndroidAudioRecorder.EXTRA_FILE_PATH);
             source = (AudioSource) savedInstanceState.getSerializable(AndroidAudioRecorder.EXTRA_SOURCE);
             channel = (AudioChannel) savedInstanceState.getSerializable(AndroidAudioRecorder.EXTRA_CHANNEL);
             sampleRate = (AudioSampleRate) savedInstanceState.getSerializable(AndroidAudioRecorder.EXTRA_SAMPLE_RATE);
@@ -92,7 +90,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
             autoStart = savedInstanceState.getBoolean(AndroidAudioRecorder.EXTRA_AUTO_START);
             keepDisplayOn = savedInstanceState.getBoolean(AndroidAudioRecorder.EXTRA_KEEP_DISPLAY_ON);
         } else {
-            filePath = getIntent().getStringExtra(AndroidAudioRecorder.EXTRA_FILE_PATH);
             source = (AudioSource) getIntent().getSerializableExtra(AndroidAudioRecorder.EXTRA_SOURCE);
             channel = (AudioChannel) getIntent().getSerializableExtra(AndroidAudioRecorder.EXTRA_CHANNEL);
             sampleRate = (AudioSampleRate) getIntent().getSerializableExtra(AndroidAudioRecorder.EXTRA_SAMPLE_RATE);
@@ -259,7 +256,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(AndroidAudioRecorder.EXTRA_FILE_PATH, filePath);
+        outState.putString(AndroidAudioRecorder.EXTRA_FILE_PATH, mFile.toString());
         outState.putInt(AndroidAudioRecorder.EXTRA_COLOR, color);
         super.onSaveInstanceState(outState);
     }
@@ -391,7 +388,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     private void startPlaying(){
         try {
             player = new MediaPlayer();
-            player.setDataSource(filePath);
+            player.setDataSource(mFile.toString());
             player.prepare();
             player.start();
 
