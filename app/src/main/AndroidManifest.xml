@@ -19,6 +19,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name="com.zizi.qmusic.TestFunctionActivity"/>
+        <activity
+            android:name="com.zizi.qmusic.record.AudioRecorderActivity"
+            android:theme="@style/Theme.AppCompat"
+            android:screenOrientation="portrait"/>
+
         <activity android:name="com.zizi.qmusic.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,6 +32,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
     </application>
 
 </manifest>

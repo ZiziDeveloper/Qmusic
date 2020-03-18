@@ -30,4 +30,7 @@ dependencies {
     implementation files('libs/musicg-1.4.2.0.jar')
     implementation 'com.github.hotchemi:permissionsdispatcher:3.1.0'
     annotationProcessor 'com.github.hotchemi:permissionsdispatcher-processor:3.1.0'
+
+    implementation 'com.kailashdabhi:om-recorder:1.1.0'
+    implementation 'com.cleveroad:audiovisualization:1.0.0'
 }
