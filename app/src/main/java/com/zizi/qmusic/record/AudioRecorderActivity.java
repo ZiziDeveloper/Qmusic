@@ -331,7 +331,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         statusView.setVisibility(View.INVISIBLE);
         restartView.setVisibility(View.INVISIBLE);
         playView.setVisibility(View.INVISIBLE);
-        recordView.setImageResource(R.drawable.aar_ic_rec);
+        recordView.setImageResource(R.drawable.ic_record);
         timerView.setText("00:00:00");
         recorderSecondsElapsed = 0;
         playerSecondsElapsed = 0;
@@ -344,8 +344,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         statusView.setVisibility(View.VISIBLE);
         restartView.setVisibility(View.INVISIBLE);
         playView.setVisibility(View.INVISIBLE);
-        recordView.setImageResource(R.drawable.aar_ic_pause);
-        playView.setImageResource(R.drawable.aar_ic_play);
+        recordView.setImageResource(R.drawable.ic_pause);
+        playView.setImageResource(R.drawable.ic_play);
 
 
         if (audioRecord == null) {
@@ -378,8 +378,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         statusView.setVisibility(View.VISIBLE);
         restartView.setVisibility(View.VISIBLE);
         playView.setVisibility(View.VISIBLE);
-        recordView.setImageResource(R.drawable.aar_ic_rec);
-        playView.setImageResource(R.drawable.aar_ic_play);
+        recordView.setImageResource(R.drawable.ic_record);
+        playView.setImageResource(R.drawable.ic_play);
 
 
 
@@ -410,7 +410,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
             timerView.setText("00:00:00");
             statusView.setText(R.string.aar_playing);
             statusView.setVisibility(View.VISIBLE);
-            playView.setImageResource(R.drawable.aar_ic_stop);
+            playView.setImageResource(R.drawable.ic_stop);
 
             playerSecondsElapsed = 0;
             startTimer();
@@ -422,7 +422,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     private void stopPlaying(){
         statusView.setText("");
         statusView.setVisibility(View.INVISIBLE);
-        playView.setImageResource(R.drawable.aar_ic_play);
+        playView.setImageResource(R.drawable.ic_play);
 
         if(player != null){
             try {

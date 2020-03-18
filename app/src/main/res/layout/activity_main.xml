@@ -4,17 +4,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary">
+    android:background="@color/color_121212">
 
     <Button
+        android:id="@+id/btn_record_audio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_centerVertical="true"
         android:padding="20dp"
-        android:text="RECORD AUDIO"
+        android:text="录音"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textColor="@android:color/white"
         android:onClick="recordAudio"
-        style="@style/Widget.AppCompat.Button.Borderless"/>
+        android:layout_marginLeft="20dp"
+        />
+    <Button
+        android:id="@+id/btn_edit_audio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:padding="20dp"
+        android:text="修饰"
+        android:layout_toEndOf="@id/btn_record_audio"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="@android:color/white"
+        android:layout_marginLeft="20dp"
+        />
 
 </RelativeLayout>

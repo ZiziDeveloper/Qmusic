@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/color_ffc341"
+    android:background="@color/color_121212"
     android:gravity="center">
 
     <LinearLayout
@@ -79,7 +79,7 @@
             android:layout_margin="15dp"
             android:padding="10dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/aar_ic_rec"
+            android:src="@drawable/ic_record"
             android:onClick="toggleRecording"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 
@@ -93,7 +93,7 @@
             android:layout_marginTop="50dp"
             android:padding="10dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/aar_ic_play"
+            android:src="@drawable/ic_play"
             android:onClick="togglePlaying"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 

@@ -4,11 +4,18 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="recorder_bg">#F4511E</color>
+    <color name="recorder_bg">#121212</color>
 
     <color name="color_ffffff">#ffffff</color>
 
     <color name="color_ffc341">#FFC341</color>
+    <color name="color_121212">#121212</color>
+    <!-- icon基调颜色   -->
+    <color name="color_icon">#FFD536</color>
+    <!-- icon第二颜色   -->
+    <color name="color_icon_second">#59C2FE</color>
+
+
 
     <color name="waveform_selected">#33b5e5</color>
     <color name="waveform_unselected">#195a72</color>
