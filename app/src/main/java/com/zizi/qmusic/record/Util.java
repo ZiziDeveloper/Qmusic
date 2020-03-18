@@ -1,23 +1,9 @@
 package com.zizi.qmusic.record;
 
 import android.graphics.Color;
-import android.media.AudioFormat;
 import android.os.Handler;
 
-import com.zizi.qmusic.record.model.AudioChannel;
-import com.zizi.qmusic.record.model.AudioSampleRate;
-import com.zizi.qmusic.record.model.AudioSource;
 
-
-/**
- * <pre>
- *     author : qiuyayong
- *     e-mail : qiuyayong@lizhi.fm
- *     time   : 2020/03/18
- *     desc   :
- *     version: 1.0
- * </pre>
- */
 public class Util {
     private static final Handler HANDLER = new Handler();
 
@@ -26,16 +12,6 @@ public class Util {
 
     public static void wait(int millis, Runnable callback){
         HANDLER.postDelayed(callback, millis);
-    }
-
-    public static omrecorder.AudioSource getMic(AudioSource source,
-                                                AudioChannel channel,
-                                                AudioSampleRate sampleRate) {
-        return new omrecorder.AudioSource.Smart(
-                source.getSource(),
-                AudioFormat.ENCODING_PCM_16BIT,
-                channel.getChannel(),
-                sampleRate.getSampleRate());
     }
 
     public static boolean isBrightColor(int color) {

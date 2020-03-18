@@ -1,14 +1,5 @@
 package com.zizi.qmusic.record.model;
 
-/**
- * <pre>
- *     author : qiuyayong
- *     e-mail : qiuyayong@lizhi.fm
- *     time   : 2020/03/18
- *     desc   :
- *     version: 1.0
- * </pre>
- */
 public enum AudioSampleRate {
     HZ_48000,
     HZ_44100,

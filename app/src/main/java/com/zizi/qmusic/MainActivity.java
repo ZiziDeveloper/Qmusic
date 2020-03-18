@@ -16,15 +16,6 @@ import com.zizi.qmusic.record.model.AudioChannel;
 import com.zizi.qmusic.record.model.AudioSampleRate;
 import com.zizi.qmusic.record.model.AudioSource;
 
-/**
- * <pre>
- *     author : qiuyayong
- *     e-mail : qiuyayong@lizhi.fm
- *     time   : 2020/03/18
- *     desc   :
- *     version: 1.0
- * </pre>
- */
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_RECORD_AUDIO = 0;
     private static final String AUDIO_FILE_PATH =
