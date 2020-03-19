@@ -9,6 +9,7 @@ import android.media.AudioRecord;
 import android.os.AsyncTask;
 import android.os.Handler.Callback;
 import android.os.Message;
+import android.util.Log;
 import android.view.SurfaceView;
 
 import com.zizi.qmusic.componets.waveComponent.utils.Pcm2Wav;
@@ -27,6 +28,7 @@ import java.util.Date;
  *
  */
 public class WaveCanvas {
+    private static final String TAG = "WaveCanvas";
 
     private ArrayList<Short> inBuf = new ArrayList<Short>();//缓冲区数据
     private ArrayList<byte[]> write_data = new ArrayList<byte[]>();//写入文件数据

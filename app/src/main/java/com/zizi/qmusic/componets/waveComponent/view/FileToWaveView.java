@@ -30,10 +30,10 @@ import com.zizi.qmusic.qmusic.R;
 
 
 /**
- * WaveformView 这个根据你的音频进行处理成完整的波形
+ * FileToWaveView 这个根据你的音频文件进行处理成完整的波形
  * 如果文件很大可能会很慢哦
  */
-public class WaveformView extends View {
+public class FileToWaveView extends View {
     // Colors
     private int line_offset;
     private Paint mGridPaint;
@@ -89,7 +89,7 @@ public class WaveformView extends View {
         this.line_offset = line_offset;
     }
 
-    public WaveformView(Context context, AttributeSet attrs) {
+    public FileToWaveView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         // We don't want keys, the markers get these

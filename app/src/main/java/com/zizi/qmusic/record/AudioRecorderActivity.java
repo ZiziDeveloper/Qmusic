@@ -18,28 +18,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.zizi.qmusic.TestFunctionActivity;
 import com.zizi.qmusic.componets.waveComponent.draw.WaveCanvas;
 import com.zizi.qmusic.componets.waveComponent.utils.SamplePlayer;
 import com.zizi.qmusic.componets.waveComponent.utils.SoundFile;
 import com.zizi.qmusic.componets.waveComponent.view.WaveSurfaceView;
-import com.zizi.qmusic.componets.waveComponent.view.WaveformView;
+import com.zizi.qmusic.componets.waveComponent.view.FileToWaveView;
 import com.zizi.qmusic.qmusic.R;
 import com.zizi.qmusic.record.model.AudioChannel;
 import com.zizi.qmusic.record.model.AudioSampleRate;
 import com.zizi.qmusic.record.model.AudioSource;
-import com.zizi.qmusic.utils.MusicSimilarityUtil;
 import com.zizi.qmusic.utils.U;
 
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -68,7 +63,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     private ImageButton playView;
 
 
-    private static final int FREQUENCY = 16000;// 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
+    private static final int FREQUENCY = 44100;// 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
     private static final int CHANNELCONGIFIGURATION = AudioFormat.CHANNEL_IN_MONO;// 设置单声道声道
     private static final int AUDIOENCODING = AudioFormat.ENCODING_PCM_16BIT;// 音频数据格式：每个样本16位
     public final static int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;// 音频获取源
@@ -121,7 +116,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         restartView.setOnClickListener(this);
         recordView = (ImageButton) findViewById(R.id.btn_record);
         recordView.setOnClickListener(this);
-        playView = (ImageButton) findViewById(R.id.btn_play);
+        playView = (ImageButton) findViewById(R.id.btn_listen);
         playView.setOnClickListener(this);
 
         contentLayout.setBackgroundColor(Util.getDarkerColor(color));
@@ -144,7 +139,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     }
 
     WaveSurfaceView waveSfv;
-    WaveformView waveView;
+    FileToWaveView waveView;
     private void initWave() {
         waveSfv = findViewById(R.id.wavesfv);
         waveView = findViewById(R.id.waveview);
@@ -281,12 +276,12 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-        stopPlaying();
+        stopListening();
     }
 
 
     public void clickRecording() {
-        stopPlaying();
+        stopListening();
         Util.wait(100, new Runnable() {
             @Override
             public void run() {
@@ -299,15 +294,15 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         });
     }
 
-    public void clickPlaying(){
+    public void clickListen(){
         stopRecording();
         Util.wait(100, new Runnable() {
             @Override
             public void run() {
                 if(isPlaying()){
-                    stopPlaying();
+                    stopListening();
                 } else {
-                    startPlaying();
+                    startListening();
                 }
             }
         });
@@ -317,14 +312,14 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         if(isRecording) {
             stopRecording();
         } else if(isPlaying()) {
-            stopPlaying();
+            stopListening();
         } else {
         }
         saveMenuItem.setVisible(false);
         statusView.setVisibility(View.INVISIBLE);
         restartView.setVisibility(View.INVISIBLE);
         playView.setVisibility(View.INVISIBLE);
-        recordView.setImageResource(R.drawable.ic_record);
+        recordView.setImageResource(R.drawable.ic_record_pause);
         timerView.setText("00:00:00");
         recorderSecondsElapsed = 0;
         playerSecondsElapsed = 0;
@@ -337,8 +332,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         statusView.setVisibility(View.VISIBLE);
         restartView.setVisibility(View.INVISIBLE);
         playView.setVisibility(View.INVISIBLE);
-        recordView.setImageResource(R.drawable.ic_pause);
-        playView.setImageResource(R.drawable.ic_play);
+        recordView.setImageResource(R.drawable.ic_recording);
+        playView.setImageResource(R.drawable.ic_listen);
 
 
         if (audioRecord == null) {
@@ -371,8 +366,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         statusView.setVisibility(View.VISIBLE);
         restartView.setVisibility(View.VISIBLE);
         playView.setVisibility(View.VISIBLE);
-        recordView.setImageResource(R.drawable.ic_record);
-        playView.setImageResource(R.drawable.ic_play);
+        recordView.setImageResource(R.drawable.ic_record_pause);
+        playView.setImageResource(R.drawable.ic_listen);
 
 
 
@@ -385,7 +380,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     }
 
 
-    private void startPlaying(){
+    private void startListening(){
         try {
             player = new MediaPlayer();
             player.setDataSource(mFile.toString());
@@ -396,7 +391,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
             timerView.setText("00:00:00");
             statusView.setText(R.string.aar_playing);
             statusView.setVisibility(View.VISIBLE);
-            playView.setImageResource(R.drawable.ic_stop);
+            playView.setImageResource(R.drawable.ic_listening);
 
             playerSecondsElapsed = 0;
             startTimer();
@@ -405,10 +400,10 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         }
     }
 
-    private void stopPlaying(){
+    private void stopListening(){
         statusView.setText("");
         statusView.setVisibility(View.INVISIBLE);
-        playView.setImageResource(R.drawable.ic_play);
+        playView.setImageResource(R.drawable.ic_listen);
 
         if(player != null){
             try {
@@ -466,8 +461,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     public void onClick(View v) {
         if (v.getId() == R.id.btn_record) {
             clickRecording();
-        } else if (v.getId() == R.id.btn_play) {
-            clickPlaying();
+        } else if (v.getId() == R.id.btn_listen) {
+            clickListen();
         } else if (v.getId() == R.id.btn_restart) {
             clickRestart();
         }
