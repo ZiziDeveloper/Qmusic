@@ -32,6 +32,7 @@ public class TestFunctionActivity extends AppCompatActivity {
     private String Aape = Environment.getExternalStorageDirectory() + File.separator + "SideA-small.ape";
     public String local = "/storage/emulated/0/1.mp3";
     private SeekBar mVolumeBar;
+
     private SeekBar mTimeBar;
     private ProgressBar mClockBar;
     private boolean mPlayNext = false;
