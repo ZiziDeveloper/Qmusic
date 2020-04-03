@@ -63,14 +63,9 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     private ImageButton playView;
 
 
-    private static final int FREQUENCY = 44100;// 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
-    private static final int CHANNELCONGIFIGURATION = AudioFormat.CHANNEL_IN_MONO;// 设置单声道声道
-    private static final int AUDIOENCODING = AudioFormat.ENCODING_PCM_16BIT;// 音频数据格式：每个样本16位
-    public final static int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;// 音频获取源
-    private int recBufSize;// 录音最小buffer大小
-    private AudioRecord audioRecord;
     private WaveCanvas waveCanvas;
     private String mFileName = "test_new";//文件名
+    private AudioRecord audioRecord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -159,7 +154,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     private void startAudio(){
         waveCanvas = new WaveCanvas();
         waveCanvas.baseLine = waveSfv.getHeight() / 2;
-        waveCanvas.Start(audioRecord, recBufSize, waveSfv, mFileName, U.DATA_DIRECTORY, new Handler.Callback() {
+        waveCanvas.Start(waveSfv, mFileName, U.DATA_DIRECTORY, new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
                 return true;
@@ -336,21 +331,12 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         playView.setImageResource(R.drawable.ic_listen);
 
 
-        if (audioRecord == null) {
-            recBufSize = AudioRecord.getMinBufferSize(FREQUENCY,
-                    CHANNELCONGIFIGURATION, AUDIOENCODING);// 录音组件
-            audioRecord = new AudioRecord(AUDIO_SOURCE,// 指定音频来源，这里为麦克风
-                    FREQUENCY, // 16000HZ采样频率
-                    CHANNELCONGIFIGURATION,// 录制通道
-                    AUDIO_SOURCE,// 录制编码格式
-                    recBufSize);// 录制缓冲区大小 //先修改
-            if (waveCanvas == null || !waveCanvas.isRecording) {
-                U.createDirectory();
-                waveSfv.setVisibility(View.VISIBLE);
-                waveView.setVisibility(View.INVISIBLE);
-                startAudio();
+        if (waveCanvas == null || !waveCanvas.isRecording) {
+            U.createDirectory();
+            waveSfv.setVisibility(View.VISIBLE);
+            waveView.setVisibility(View.INVISIBLE);
+            startAudio();
 
-            }
         }
         timerView.setText("00:00:00");
 

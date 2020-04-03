@@ -5,13 +5,17 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
+import android.media.AudioFormat;
 import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Handler.Callback;
 import android.os.Message;
 import android.util.Log;
 import android.view.SurfaceView;
 
+import com.zizi.playlib.CycleBuffer;
+import com.zizi.playlib.record.RecordClient;
 import com.zizi.qmusic.componets.waveComponent.utils.Pcm2Wav;
 import com.zizi.qmusic.componets.waveComponent.view.WaveSurfaceView;
 
@@ -39,8 +43,6 @@ public class WaveCanvas {
     public int rateX = 100;//控制多少帧取一帧
     public int rateY = 1; //  Y轴缩小的比例 默认为1
     public int baseLine = 0;// Y轴基线
-    private AudioRecord audioRecord;
-    int recBufSize;
     private int marginRight=30;//波形图绘制距离右边的距离
     private int marginLeft=20;//波形图绘制距离左边的距离
     private int draw_time = 1000 / 200;//两次绘图间隔的时间
@@ -57,25 +59,28 @@ public class WaveCanvas {
     private Paint paintText;
     private Paint paintRect;
 
+    RecordClient mRecordClient;
+
+    private static final int FREQUENCY = 44100;// 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
+    private static final int CHANNELCONGIFIGURATION = AudioFormat.CHANNEL_IN_MONO;// 设置单声道声道
+    private static final int AUDIOENCODING = AudioFormat.ENCODING_PCM_16BIT;// 音频数据格式：每个样本16位
+    public final static int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;// 音频获取源
+
 
     /**
      * 开始录音
-     * @param audioRecord
-     * @param recBufSize
      * @param sfv
      * @param audioName
      */
-    public void Start(AudioRecord audioRecord, int recBufSize, SurfaceView sfv
+    public void Start(SurfaceView sfv
             ,String audioName,String path,Callback callback) {
-        this.audioRecord = audioRecord;
         isRecording = true;
         isWriting = true;
-        this.recBufSize = recBufSize;
         savePcmPath = path + audioName +".pcm";
         saveWavPath = path + audioName +".wav";
         init();
         new Thread(new WriteRunnable()).start();//开线程写文件
-        new RecordTask(audioRecord, recBufSize, sfv, mPaint,callback).execute();
+        new RecordTask(sfv, mPaint,callback).execute();
     }
 
     public  void init(){
@@ -113,7 +118,7 @@ public class WaveCanvas {
      */
     public void Stop() {
         isRecording = false;
-        audioRecord.stop();
+        mRecordClient.stop();
         //inBuf.clear();// 清除
     }
 
@@ -133,33 +138,38 @@ public class WaveCanvas {
      */
     class RecordTask extends AsyncTask<Object, Object, Object> {
         private int recBufSize;
-        private AudioRecord audioRecord;
         private SurfaceView sfv;// 画板
         private Paint mPaint;// 画笔
         private Callback callback;
         private boolean isStart =false;
 
 
-        public RecordTask(AudioRecord audioRecord, int recBufSize,
-                          SurfaceView sfv, Paint mPaint,Callback callback) {
-            this.audioRecord = audioRecord;
-            this.recBufSize = recBufSize;
+        public RecordTask(SurfaceView sfv, Paint mPaint,Callback callback) {
+            this.recBufSize = AudioRecord.getMinBufferSize(FREQUENCY,
+                    CHANNELCONGIFIGURATION, AUDIOENCODING);
             this.sfv = sfv;
             line_off = ((WaveSurfaceView)sfv).getLine_off();
             this.mPaint = mPaint;
             this.callback = callback;
             inBuf.clear();// 清除  换缓冲区的数据
+            mRecordClient = new RecordClient();
         }
 
         @Override
         protected Object doInBackground(Object... params) {
             try {
                 short[] buffer = new short[recBufSize];
-                audioRecord.startRecording();// 开始录制
+                mRecordClient.start();
                 while (isRecording) {
                     // 从MIC保存数据到缓冲区
-                    readsize = audioRecord.read(buffer, 0,
-                            recBufSize);
+                    CycleBuffer cyclerBuffer = mRecordClient.getRecCycleBuffer();
+                    readsize = cyclerBuffer.getUnreadLen();
+                    if (readsize <= 0) {
+                        //[todo]truyayong 这里生产者消费者模型，这里实现不够好
+                        Thread.sleep(20);
+                    }
+                    cyclerBuffer.read(buffer, readsize);
+                    Log.e(TAG, "readsize : " + readsize + " buffer size : " + buffer.length);
                     synchronized (inBuf) {
                         for (int i = 0; i < readsize; i += rateX) {
                             inBuf.add(buffer[i]);
