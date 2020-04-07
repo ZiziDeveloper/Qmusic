@@ -34,10 +34,7 @@ import java.util.Date;
 public class WaveCanvas {
     private static final String TAG = "WaveCanvas";
 
-    private ArrayList<Short> inBuf = new ArrayList<Short>();//缓冲区数据
-    private ArrayList<byte[]> write_data = new ArrayList<byte[]>();//写入文件数据
     public boolean isRecording = false;// 录音线程控制标记
-    private boolean isWriting = false;// 录音线程控制标记
     private  ArrayList<String>filePathList = new ArrayList<>();
     private int line_off ;//上下边距的距离
     public int rateX = 100;//控制多少帧取一帧
@@ -48,23 +45,16 @@ public class WaveCanvas {
     private int draw_time = 1000 / 200;//两次绘图间隔的时间
     private float divider = 0.2f;//为了节约绘画时间，每0.2个像素画一个数据
     long c_time;//当前时间戳
-    private String savePcmPath ;//保存pcm文件路径
-    private String saveWavPath;//保存wav文件路径
     private Paint circlePaint;
     private Paint center;
     private Paint paintLine;
     private Paint mPaint;
 
-    private int readsize;
     private Paint paintText;
     private Paint paintRect;
 
     RecordClient mRecordClient;
 
-    private static final int FREQUENCY = 44100;// 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
-    private static final int CHANNELCONGIFIGURATION = AudioFormat.CHANNEL_IN_MONO;// 设置单声道声道
-    private static final int AUDIOENCODING = AudioFormat.ENCODING_PCM_16BIT;// 音频数据格式：每个样本16位
-    public final static int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;// 音频获取源
 
 
     /**
@@ -72,15 +62,127 @@ public class WaveCanvas {
      * @param sfv
      * @param audioName
      */
-    public void Start(SurfaceView sfv
+    public void Start(final SurfaceView sfv
             ,String audioName,String path,Callback callback) {
         isRecording = true;
-        isWriting = true;
-        savePcmPath = path + audioName +".pcm";
-        saveWavPath = path + audioName +".wav";
         init();
-        new Thread(new WriteRunnable()).start();//开线程写文件
-        new RecordTask(sfv, mPaint,callback).execute();
+//        new Thread(new WriteRunnable()).start();//开线程写文件
+        line_off = ((WaveSurfaceView)sfv).getLine_off();
+        mRecordClient = new RecordClient(audioName, path);
+        mRecordClient.setOnRecordNotifyListner(new RecordClient.OnRecordNotifyListner() {
+
+            @Override
+            public void onStart() {
+
+            }
+
+            @Override
+            public void onData(final ArrayList<Short> data) {
+                sfv.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        long time = new Date().getTime();
+                        if(time - c_time >= draw_time){
+                            ArrayList<Short> buf = new ArrayList<Short>();
+                            synchronized (data) {
+                                if (data.size() == 0)
+                                    return;
+                                while(data.size() > (sfv.getWidth()-marginRight) / divider){
+                                    data.remove(0);
+                                }
+                                buf = (ArrayList<Short>) data.clone();// 保存
+                            }
+                            SimpleDraw(sfv,buf, sfv.getHeight()/2);// 把缓冲区数据画出来
+                            c_time = new Date().getTime();
+                        }
+                    }
+                });
+
+            }
+
+            @Override
+            public void onStop() {
+                isRecording = false;
+            }
+        });
+        mRecordClient.start();
+    }
+
+    /**
+     * 绘制指定区域
+     *
+     * @param buf
+     *            缓冲区
+     * @param baseLine
+     *            Y轴基线
+     */
+    void SimpleDraw(SurfaceView sfv,ArrayList<Short> buf, int baseLine) {
+        divider = (float) ((sfv.getWidth()-marginRight-marginLeft)/(16000/rateX*20.00));
+        if (!isRecording)
+            return;
+        rateY = (65535 /2/ (sfv.getHeight()-line_off));
+
+        for (int i = 0; i < buf.size(); i++) {
+            byte bus[] = getBytes(buf.get(i));
+            buf.set(i, (short)((0x0000 | bus[1]) << 8 | bus[0]));//高低位交换
+        }
+        Canvas canvas = sfv.getHolder().lockCanvas(
+                new Rect(0, 0, sfv.getWidth(), sfv.getHeight()));// 关键:获取画布
+        if(canvas==null)
+            return;
+        canvas.drawARGB(255, 239, 239, 239);
+        int start =(int) ((buf.size())* divider);
+        float py = baseLine;
+        float y;
+
+        if(sfv.getWidth() - start <= marginRight){//如果超过预留的右边距距离
+            start = sfv.getWidth() -marginRight;//画的位置x坐标
+        }
+        canvas.drawLine(0, line_off/2, sfv.getWidth(), line_off/2, paintLine);//最上面的那根线
+        canvas.drawLine(0, sfv.getHeight()-line_off/2-1, sfv.getWidth(), sfv.getHeight()-line_off/2-1, paintLine);//最下面的那根线
+        canvas.drawCircle(start, line_off/2, line_off/10, circlePaint);// 上圆
+        canvas.drawCircle(start, sfv.getHeight()-line_off/2-1, line_off/10, circlePaint);// 下圆
+        canvas.drawLine(start, line_off/2, start, sfv.getHeight()-line_off/2, circlePaint);//垂直的线
+        int height = sfv.getHeight()-line_off;
+        canvas.drawLine(0, height*0.5f+line_off/2, sfv.getWidth() ,height*0.5f+line_off/2, center);//中心线
+
+//	         canvas.drawLine(0, height*0.25f+20, sfv.getWidth(),height*0.25f+20, paintLine);//第二根线
+//	         canvas.drawLine(0, height*0.75f+20, sfv.getWidth(),height*0.75f+20, paintLine);//第3根线
+        for (int i = 0; i < buf.size(); i++) {
+            y =buf.get(i)/rateY + baseLine;// 调节缩小比例，调节基准线
+            float x=(i) * divider;
+            if(sfv.getWidth() - (i-1) * divider <= marginRight){
+                x = sfv.getWidth()-marginRight;
+            }
+            //画线的方式很多，你可以根据自己要求去画。这里只是为了简单
+            float y1 = sfv.getHeight() - y;
+            if(y<line_off/2){
+                y = line_off / 2;
+            }
+            if(y>sfv.getHeight()-line_off/2-1){
+                y = sfv.getHeight() - line_off / 2 - 1;
+
+            }
+            if(y1<line_off/2){
+                y1 = line_off / 2;
+            }
+            if(y1>(sfv.getHeight()-line_off/2-1)){
+                y1 = (sfv.getHeight() - line_off / 2 - 1);
+            }
+            canvas.drawLine(x, y,  x,y1, mPaint);//中间出波形
+        }
+        sfv.getHolder().unlockCanvasAndPost(canvas);// 解锁画布，提交画好的图像
+    }
+
+    public byte[] getBytes(short s)
+    {
+        byte[] buf = new byte[2];
+        for (int i = 0; i < buf.length; i++)
+        {
+            buf[i] = (byte) (s & 0x00ff);
+            s >>= 8;
+        }
+        return buf;
     }
 
     public  void init(){
@@ -126,227 +228,7 @@ public class WaveCanvas {
      * 清楚数据
      */
     public void clear(){
-        inBuf.clear();// 清除
     }
-
-
-
-    /**
-     * 异步录音程序
-     * @author cokus
-     *
-     */
-    class RecordTask extends AsyncTask<Object, Object, Object> {
-        private int recBufSize;
-        private SurfaceView sfv;// 画板
-        private Paint mPaint;// 画笔
-        private Callback callback;
-        private boolean isStart =false;
-
-
-        public RecordTask(SurfaceView sfv, Paint mPaint,Callback callback) {
-            this.recBufSize = AudioRecord.getMinBufferSize(FREQUENCY,
-                    CHANNELCONGIFIGURATION, AUDIOENCODING);
-            this.sfv = sfv;
-            line_off = ((WaveSurfaceView)sfv).getLine_off();
-            this.mPaint = mPaint;
-            this.callback = callback;
-            inBuf.clear();// 清除  换缓冲区的数据
-            mRecordClient = new RecordClient();
-        }
-
-        @Override
-        protected Object doInBackground(Object... params) {
-            try {
-                short[] buffer = new short[recBufSize];
-                mRecordClient.start();
-                while (isRecording) {
-                    // 从MIC保存数据到缓冲区
-                    CycleBuffer cyclerBuffer = mRecordClient.getRecCycleBuffer();
-                    readsize = cyclerBuffer.getUnreadLen();
-                    if (readsize <= 0) {
-                        //[todo]truyayong 这里生产者消费者模型，这里实现不够好
-                        Thread.sleep(20);
-                    }
-                    cyclerBuffer.read(buffer, readsize);
-                    Log.e(TAG, "readsize : " + readsize + " buffer size : " + buffer.length);
-                    synchronized (inBuf) {
-                        for (int i = 0; i < readsize; i += rateX) {
-                            inBuf.add(buffer[i]);
-                        }
-                    }
-                    publishProgress();
-                    if (AudioRecord.ERROR_INVALID_OPERATION != readsize) {
-                        synchronized (write_data) {
-                            byte  bys[] = new byte[readsize*2];
-                            //因为arm字节序问题，所以需要高低位交换
-                            for (int i = 0; i < readsize; i++) {
-                                byte ss[] =	getBytes(buffer[i]);
-                                bys[i*2] =ss[0];
-                                bys[i*2+1] = ss[1];
-                            }
-                            write_data.add(bys);
-                        }
-                    }
-                }
-                isWriting = false;
-            } catch (Throwable t) {
-                Message msg = new Message();
-                msg.arg1 =-2;
-                msg.obj=t.getMessage();
-                callback.handleMessage(msg);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Object... values) {
-            long time = new Date().getTime();
-            if(time - c_time >= draw_time){
-                ArrayList<Short> buf = new ArrayList<Short>();
-                synchronized (inBuf) {
-                    if (inBuf.size() == 0)
-                        return;
-                    while(inBuf.size() > (sfv.getWidth()-marginRight) / divider){
-                        inBuf.remove(0);
-                    }
-                    buf = (ArrayList<Short>) inBuf.clone();// 保存
-                }
-                SimpleDraw(buf, sfv.getHeight()/2);// 把缓冲区数据画出来
-                c_time = new Date().getTime();
-            }
-            super.onProgressUpdate(values);
-        }
-
-
-        public byte[] getBytes(short s)
-        {
-            byte[] buf = new byte[2];
-            for (int i = 0; i < buf.length; i++)
-            {
-                buf[i] = (byte) (s & 0x00ff);
-                s >>= 8;
-            }
-            return buf;
-        }
-
-        /**
-         * 绘制指定区域
-         *
-         * @param buf
-         *            缓冲区
-         * @param baseLine
-         *            Y轴基线
-         */
-        void SimpleDraw(ArrayList<Short> buf, int baseLine) {
-            divider = (float) ((sfv.getWidth()-marginRight-marginLeft)/(16000/rateX*20.00));
-            if (!isRecording)
-                return;
-            rateY = (65535 /2/ (sfv.getHeight()-line_off));
-
-            for (int i = 0; i < buf.size(); i++) {
-                byte bus[] = getBytes(buf.get(i));
-                buf.set(i, (short)((0x0000 | bus[1]) << 8 | bus[0]));//高低位交换
-            }
-            Canvas canvas = sfv.getHolder().lockCanvas(
-                    new Rect(0, 0, sfv.getWidth(), sfv.getHeight()));// 关键:获取画布
-            if(canvas==null)
-                return;
-            canvas.drawARGB(255, 239, 239, 239);
-            int start =(int) ((buf.size())* divider);
-            float py = baseLine;
-            float y;
-
-            if(sfv.getWidth() - start <= marginRight){//如果超过预留的右边距距离
-                start = sfv.getWidth() -marginRight;//画的位置x坐标
-            }
-            canvas.drawLine(0, line_off/2, sfv.getWidth(), line_off/2, paintLine);//最上面的那根线
-            canvas.drawLine(0, sfv.getHeight()-line_off/2-1, sfv.getWidth(), sfv.getHeight()-line_off/2-1, paintLine);//最下面的那根线
-            canvas.drawCircle(start, line_off/2, line_off/10, circlePaint);// 上圆
-            canvas.drawCircle(start, sfv.getHeight()-line_off/2-1, line_off/10, circlePaint);// 下圆
-            canvas.drawLine(start, line_off/2, start, sfv.getHeight()-line_off/2, circlePaint);//垂直的线
-            int height = sfv.getHeight()-line_off;
-            canvas.drawLine(0, height*0.5f+line_off/2, sfv.getWidth() ,height*0.5f+line_off/2, center);//中心线
-
-//	         canvas.drawLine(0, height*0.25f+20, sfv.getWidth(),height*0.25f+20, paintLine);//第二根线
-//	         canvas.drawLine(0, height*0.75f+20, sfv.getWidth(),height*0.75f+20, paintLine);//第3根线
-            for (int i = 0; i < buf.size(); i++) {
-                y =buf.get(i)/rateY + baseLine;// 调节缩小比例，调节基准线
-                float x=(i) * divider;
-                if(sfv.getWidth() - (i-1) * divider <= marginRight){
-                    x = sfv.getWidth()-marginRight;
-                }
-                //画线的方式很多，你可以根据自己要求去画。这里只是为了简单
-                float y1 = sfv.getHeight() - y;
-                if(y<line_off/2){
-                    y = line_off / 2;
-                }
-                if(y>sfv.getHeight()-line_off/2-1){
-                    y = sfv.getHeight() - line_off / 2 - 1;
-
-                }
-                if(y1<line_off/2){
-                    y1 = line_off / 2;
-                }
-                if(y1>(sfv.getHeight()-line_off/2-1)){
-                    y1 = (sfv.getHeight() - line_off / 2 - 1);
-                }
-                canvas.drawLine(x, y,  x,y1, mPaint);//中间出波形
-            }
-            sfv.getHolder().unlockCanvasAndPost(canvas);// 解锁画布，提交画好的图像
-        }
-    }
-
-
-
-
-    /**
-     * 异步写文件
-     * @author cokus
-     *
-     */
-    class WriteRunnable implements Runnable {
-        @Override
-        public void run() {
-            try {
-                FileOutputStream fos2wav = null;
-                File file2wav = null;
-                try {
-                    file2wav = new File(savePcmPath);
-                    if (file2wav.exists()) {
-                        file2wav.delete();
-                    }
-                    fos2wav = new FileOutputStream(file2wav);// 建立一个可存取字节的文件
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                while (isWriting || write_data.size() > 0) {
-                    byte[] buffer = null;
-                    synchronized (write_data) {
-                        if(write_data.size() > 0){
-                            buffer = write_data.get(0);
-                            write_data.remove(0);
-                        }
-                    }
-                    try {
-                        if(buffer != null){
-                            fos2wav.write(buffer);
-                            fos2wav.flush();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                fos2wav.close();
-                Pcm2Wav p2w = new Pcm2Wav();//将pcm格式转换成wav 其实就尼玛加了一个44字节的头信息
-                p2w.convertAudioFiles(savePcmPath, saveWavPath);
-            } catch (Throwable t) {
-            }
-        }
-    }
-
-
 
 }
 

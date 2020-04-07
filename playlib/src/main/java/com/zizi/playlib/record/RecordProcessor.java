@@ -52,13 +52,16 @@ public class RecordProcessor extends Thread {
         mAudioRecord.startRecording();
         try{
             while (isRecording) {
-                int readSize = mAudioRecord.read(buffer, 0, mRecBufSize);
-                if (readSize <= 0) {
-                    sleep(1);
-                    continue;
+                synchronized (mRecCycleBuffer) {
+                    int readSize = mAudioRecord.read(buffer, 0, mRecBufSize);
+                    if (readSize <= 0) {
+                        sleep(1);
+                        continue;
+                    }
+                    mRecCycleBuffer.write(buffer, readSize);
+                    mRecCycleBuffer.notifyAll();
+                    Log.e(TAG, "mAudioRecord readSize : " + readSize + " buffer size : " + buffer.length + "  UnreadLen : " + mRecCycleBuffer.getUnreadLen());
                 }
-                mRecCycleBuffer.write(buffer, readSize);
-                Log.e(TAG, "mAudioRecord readSize : " + readSize + " buffer size : " + buffer.length + "  UnreadLen : " + mRecCycleBuffer.getUnreadLen());
             }
         } catch (InterruptedException e) {
             Log.e(TAG, "InterruptedException : " + e);
