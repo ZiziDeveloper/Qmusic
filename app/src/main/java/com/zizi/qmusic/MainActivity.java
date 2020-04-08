@@ -12,9 +12,6 @@ import android.widget.Toast;
 
 import com.zizi.qmusic.qmusic.R;
 import com.zizi.qmusic.record.AndroidAudioRecorder;
-import com.zizi.qmusic.record.model.AudioChannel;
-import com.zizi.qmusic.record.model.AudioSampleRate;
-import com.zizi.qmusic.record.model.AudioSource;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_RECORD_AUDIO = 0;
@@ -53,14 +50,6 @@ public class MainActivity extends AppCompatActivity {
                 .setFilePath(AUDIO_FILE_PATH)
                 .setColor(ContextCompat.getColor(this, R.color.recorder_bg))
                 .setRequestCode(REQUEST_RECORD_AUDIO)
-
-                // Optional
-                .setSource(AudioSource.MIC)
-                .setChannel(AudioChannel.STEREO)
-                .setSampleRate(AudioSampleRate.HZ_48000)
-                .setAutoStart(false)
-                .setKeepDisplayOn(true)
-
                 // Start recording
                 .record();
     }

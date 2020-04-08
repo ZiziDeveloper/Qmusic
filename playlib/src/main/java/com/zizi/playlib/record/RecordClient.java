@@ -22,8 +22,24 @@ public class RecordClient {
 
     private static final int REV_CYCLE_BUFFER_SIZE = 100 * 1024;
 
+    private static final int PLAY_CYCLE_BUFFER_SIZE = 100 * 1024;
+
+    /**
+     * 录音处理线程
+     */
     private RecordProcessor mRecordProcessor;
+    /**
+     * 录音播放线程
+     */
+    private AudioPlayProcessor mAudioPlayProcessor;
+    /**
+     * 录音音频数据缓存
+     */
     private CycleBuffer mRevCycleBuffer;
+    /**
+     * 播放录音数据缓存
+     */
+    private CycleBuffer mPlayCycleBuffer;
     private Thread mReceiveRecordThread;
     private Thread mWriteRunnableThread;
     private OnRecordNotifyListner mOnRecordNotifyListner;
@@ -47,7 +63,7 @@ public class RecordClient {
                 /**
                  * 此处有可能AudioRecord还没有初始化成功，audioRecordBufferSize为0
                  */
-                int audioRecordBufferSize = mRecordProcessor.getAudioRecordBufferSize();
+                int audioRecordBufferSize = RecordSession.getInstance().getRecordBufSize();
                 short[] buffer = new short[audioRecordBufferSize];
                 while (isRecording) {
                     if (mRevCycleBuffer.getUnreadLen() <= 0) {
@@ -60,10 +76,11 @@ public class RecordClient {
                      * 此处再check一下buffer是否已经初始化成功
                      */
                     if (buffer.length <= 0) {
-                        audioRecordBufferSize = mRecordProcessor.getAudioRecordBufferSize();
+                        audioRecordBufferSize = RecordSession.getInstance().getRecordBufSize();
                         buffer = new short[audioRecordBufferSize];
                     }
                     mReadsize = mRevCycleBuffer.read(buffer, audioRecordBufferSize);
+                    mPlayCycleBuffer.write(buffer, mReadsize);
 
                     Log.e(TAG, "readsize : " + mReadsize + " buffer size : " + buffer.length);
                     synchronized (inBuf) {
@@ -152,7 +169,9 @@ public class RecordClient {
 
     public RecordClient(String audioName,String path) {
         mRevCycleBuffer = new CycleBuffer(REV_CYCLE_BUFFER_SIZE);
+        mPlayCycleBuffer = new CycleBuffer(PLAY_CYCLE_BUFFER_SIZE);
         mRecordProcessor = new RecordProcessor("RecordProcessor", mRevCycleBuffer);
+        mAudioPlayProcessor = new AudioPlayProcessor("AudioPlayProcessor", mPlayCycleBuffer);
         mReceiveRecordThread = new Thread(mReceiveRecordRunnable,"ReceiveRecordThread");
         mWriteRunnableThread = new Thread(mWrittingRunnable, "WriteRunnableThread");
         savePcmPath = path + audioName +".pcm";
@@ -165,6 +184,7 @@ public class RecordClient {
         mRecordProcessor.proccessStart();
         mReceiveRecordThread.start();
         mWriteRunnableThread.start();
+        mAudioPlayProcessor.proccessStart();
         if (mOnRecordNotifyListner != null) {
             mOnRecordNotifyListner.onStart();
         }
@@ -174,6 +194,7 @@ public class RecordClient {
         isRecording = false;
         isWriting = false;
         mRecordProcessor.proccessStop();
+        mAudioPlayProcessor.proccessStop();
         if (mOnRecordNotifyListner != null) {
             mOnRecordNotifyListner.onStop();
         }

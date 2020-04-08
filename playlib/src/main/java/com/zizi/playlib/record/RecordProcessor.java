@@ -22,7 +22,10 @@ import com.zizi.playlib.record.utils.RecordLogTag;
 public class RecordProcessor extends Thread {
     private static final String TAG = RecordLogTag.RECORD_PROCCESS_TAG + "RecordProcessor";
 
-    private static final int FREQUENCY = 44100;// 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
+    /**
+     * 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
+     */
+    private static final int FREQUENCY = 44100;
 
     /**
      * AudioRecord创建时允许使用最大的bufferSize
@@ -121,7 +124,7 @@ public class RecordProcessor extends Thread {
         if (audioDeviceInfo != null) {
             for (int i = 0; i < audioDeviceInfo.getChannelCounts().length; i++) {
                 if (audioDeviceInfo.getChannelCounts()[i] == 2) {
-                    channels = AudioFormat.CHANNEL_IN_STEREO;
+                    channels = AudioFormat.CHANNEL_IN_MONO;
                     break;
                 } else {
                     channels = AudioFormat.CHANNEL_IN_MONO;
@@ -137,13 +140,13 @@ public class RecordProcessor extends Thread {
             AudioRecord audioRecord = null;
             if (mIsBluetoothOn) {
                 mRecBufSize = mRecMinBufSize;
-                audioRecord = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
+                audioRecord = newAudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
             } else {
-                audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
+                audioRecord = newAudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
                 if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
                     do {
                         mRecBufSize = mRecBufSize / 2;
-                        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
+                        audioRecord = newAudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
                         if (audioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
                             return  audioRecord;
                         }
@@ -163,6 +166,14 @@ public class RecordProcessor extends Thread {
             }
         }
         return null;
+    }
+
+    private AudioRecord newAudioRecord(int audioSource, int sampleRateInHz, int channelConfig, int audioFormat,
+                                       int bufferSizeInBytes) {
+        Log.e(TAG, "newAudioRecord audioSource : " + audioSource + " sampleRateInHz : " + sampleRateInHz
+                + " channelConfig : " + channelConfig + " audioFormat : " + audioFormat + " bufferSizeInBytes : " + bufferSizeInBytes);
+        RecordSession.getInstance().setRecordBufSize(bufferSizeInBytes);
+        return new AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, bufferSizeInBytes);
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -193,14 +204,6 @@ public class RecordProcessor extends Thread {
             result *= 2;
         }
         return result;
-    }
-
-    /**
-     * 获取AudioRecord缓冲区大小
-     * @return
-     */
-    public int getAudioRecordBufferSize() {
-        return mRecBufSize;
     }
 
 

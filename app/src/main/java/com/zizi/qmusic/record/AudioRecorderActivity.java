@@ -4,10 +4,7 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
 import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,14 +22,10 @@ import android.widget.TextView;
 import com.zizi.qmusic.componets.waveComponent.draw.WaveCanvas;
 import com.zizi.qmusic.componets.waveComponent.utils.SamplePlayer;
 import com.zizi.qmusic.componets.waveComponent.utils.SoundFile;
-import com.zizi.qmusic.componets.waveComponent.view.WaveSurfaceView;
 import com.zizi.qmusic.componets.waveComponent.view.FileToWaveView;
+import com.zizi.qmusic.componets.waveComponent.view.WaveSurfaceView;
 import com.zizi.qmusic.qmusic.R;
-import com.zizi.qmusic.record.model.AudioChannel;
-import com.zizi.qmusic.record.model.AudioSampleRate;
-import com.zizi.qmusic.record.model.AudioSource;
 import com.zizi.qmusic.utils.U;
-
 
 import java.io.File;
 import java.util.Timer;
@@ -40,9 +33,6 @@ import java.util.TimerTask;
 
 public class AudioRecorderActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, View.OnClickListener {
 
-    private AudioSource source;
-    private AudioChannel channel;
-    private AudioSampleRate sampleRate;
     private int color;
     private boolean autoStart;
     private boolean keepDisplayOn;
@@ -65,7 +55,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
     private WaveCanvas waveCanvas;
     private String mFileName = "test_new";//文件名
-    private AudioRecord audioRecord;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,16 +62,10 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         setContentView(R.layout.activity_audio_recorder);
 
         if(savedInstanceState != null) {
-            source = (AudioSource) savedInstanceState.getSerializable(AndroidAudioRecorder.EXTRA_SOURCE);
-            channel = (AudioChannel) savedInstanceState.getSerializable(AndroidAudioRecorder.EXTRA_CHANNEL);
-            sampleRate = (AudioSampleRate) savedInstanceState.getSerializable(AndroidAudioRecorder.EXTRA_SAMPLE_RATE);
             color = savedInstanceState.getInt(AndroidAudioRecorder.EXTRA_COLOR);
             autoStart = savedInstanceState.getBoolean(AndroidAudioRecorder.EXTRA_AUTO_START);
             keepDisplayOn = savedInstanceState.getBoolean(AndroidAudioRecorder.EXTRA_KEEP_DISPLAY_ON);
         } else {
-            source = (AudioSource) getIntent().getSerializableExtra(AndroidAudioRecorder.EXTRA_SOURCE);
-            channel = (AudioChannel) getIntent().getSerializableExtra(AndroidAudioRecorder.EXTRA_CHANNEL);
-            sampleRate = (AudioSampleRate) getIntent().getSerializableExtra(AndroidAudioRecorder.EXTRA_SAMPLE_RATE);
             color = getIntent().getIntExtra(AndroidAudioRecorder.EXTRA_COLOR, Color.BLACK);
             autoStart = getIntent().getBooleanExtra(AndroidAudioRecorder.EXTRA_AUTO_START, false);
             keepDisplayOn = getIntent().getBooleanExtra(AndroidAudioRecorder.EXTRA_KEEP_DISPLAY_ON, false);
