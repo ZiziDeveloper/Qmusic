@@ -66,7 +66,6 @@ public class WaveCanvas {
             ,String audioName,String path,Callback callback) {
         isRecording = true;
         init();
-//        new Thread(new WriteRunnable()).start();//开线程写文件
         line_off = ((WaveSurfaceView)sfv).getLine_off();
         mRecordClient = new RecordClient(audioName, path);
         mRecordClient.setOnRecordNotifyListner(new RecordClient.OnRecordNotifyListner() {

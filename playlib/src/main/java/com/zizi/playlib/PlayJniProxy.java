@@ -2,6 +2,8 @@ package com.zizi.playlib;
 
 import android.util.Log;
 
+import com.zizi.playlib.record.utils.RecordLogTag;
+
 /**
  * Created by Administrator on 2018/12/13 0013.
  */

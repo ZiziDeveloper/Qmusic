@@ -10,7 +10,7 @@ import android.util.Log;
 public class U {
 
     public static final String DATA_DIRECTORY = Environment
-            .getExternalStorageDirectory() + "/record";
+            .getExternalStorageDirectory() + "/Qmusic/";
 
     /**
      * 创建不同的目录

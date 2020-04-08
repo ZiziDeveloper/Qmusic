@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.zizi.playlib.CycleBuffer;
 import com.zizi.playlib.record.utils.Pcm2Wav;
+import com.zizi.playlib.record.utils.RecordLogTag;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,14 +18,9 @@ import java.util.ArrayList;
  * 录音功能对外接口
  */
 public class RecordClient {
-    private static final String TAG = "RecordClient";
+    private static final String TAG = RecordLogTag.RECORD_PROCCESS_TAG + "RecordClient";
 
     private static final int REV_CYCLE_BUFFER_SIZE = 100 * 1024;
-
-    private static final int FREQUENCY = 44100;// 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
-    private static final int CHANNELCONGIFIGURATION = AudioFormat.CHANNEL_IN_MONO;// 设置单声道声道
-    private static final int AUDIOENCODING = AudioFormat.ENCODING_PCM_16BIT;// 音频数据格式：每个样本16位
-    public final static int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;// 音频获取源
 
     private RecordProcessor mRecordProcessor;
     private CycleBuffer mRevCycleBuffer;
@@ -34,7 +30,6 @@ public class RecordClient {
 
     private int readsize;
     private ArrayList<Short> inBuf = new ArrayList<Short>();//缓冲区数据
-    private int recBufSize;
     public int rateX = 100;//控制多少帧取一帧
     private ArrayList<byte[]> write_data = new ArrayList<byte[]>();//写入文件数据
     public boolean isRecording = false;// 录音线程控制标记
@@ -49,19 +44,28 @@ public class RecordClient {
         @Override
         public void run() {
             try {
-                recBufSize = AudioRecord.getMinBufferSize(FREQUENCY,
-                        CHANNELCONGIFIGURATION, AUDIOENCODING);
-                short[] buffer = new short[recBufSize];
+                /**
+                 * 此处有可能AudioRecord还没有初始化成功
+                 */
+                int audioRecordBufferSize = mRecordProcessor.getAudioRecordBufferSize();
+                short[] buffer = new short[audioRecordBufferSize];
                 while (isRecording) {
                     // 从MIC保存数据到缓冲区
-                    CycleBuffer cyclerBuffer = mRevCycleBuffer;
-                    readsize = cyclerBuffer.getUnreadLen();
-                    if (readsize <= 0) {
+                    if (mRevCycleBuffer.getUnreadLen() <= 0) {
                         //[todo]truyayong 这里生产者消费者模型，这里实现不够好
                         Thread.sleep(20);
                         continue;
                     }
-                    cyclerBuffer.read(buffer, readsize);
+
+                    /**
+                     *
+                     */
+                    if (buffer.length <= 0) {
+                        audioRecordBufferSize = mRecordProcessor.getAudioRecordBufferSize();
+                        buffer = new short[audioRecordBufferSize];
+                    }
+                    readsize = mRevCycleBuffer.read(buffer, audioRecordBufferSize);
+
                     Log.e(TAG, "readsize : " + readsize + " buffer size : " + buffer.length);
                     synchronized (inBuf) {
                         for (int i = 0; i < readsize; i += rateX) {
@@ -71,7 +75,6 @@ public class RecordClient {
                     if (mOnRecordNotifyListner != null) {
                         mOnRecordNotifyListner.onData(inBuf);
                     }
-//                publishProgress();
                     if (AudioRecord.ERROR_INVALID_OPERATION != readsize) {
                         synchronized (write_data) {
                             byte  bys[] = new byte[readsize*2];
@@ -86,7 +89,7 @@ public class RecordClient {
                     }
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Exception e : ", e);
+                Log.e(TAG, "mReceiveRecordRunnable Exception e : ", e);
             }
 
         }
@@ -129,9 +132,10 @@ public class RecordClient {
                 }
 
                 fos2wav.close();
-                Pcm2Wav p2w = new Pcm2Wav();//将pcm格式转换成wav 其实就尼玛加了一个44字节的头信息
+                Pcm2Wav p2w = new Pcm2Wav();//将pcm格式转换成wav 其实就加了一个44字节的头信息
                 p2w.convertAudioFiles(savePcmPath, saveWavPath);
-            } catch (Throwable t) {
+            } catch (Exception e) {
+                Log.e(TAG, "mWrittingRunnable Exception e : ", e);
             }
         }
     };
