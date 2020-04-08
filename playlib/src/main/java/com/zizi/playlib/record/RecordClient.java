@@ -28,10 +28,10 @@ public class RecordClient {
     private Thread mWriteRunnableThread;
     private OnRecordNotifyListner mOnRecordNotifyListner;
 
-    private int readsize;
+    private int mReadsize;
     private ArrayList<Short> inBuf = new ArrayList<Short>();//缓冲区数据
-    public int rateX = 100;//控制多少帧取一帧
-    private ArrayList<byte[]> write_data = new ArrayList<byte[]>();//写入文件数据
+    public int mRateX = 100;//控制多少帧取一帧
+    private ArrayList<byte[]> mWriteData = new ArrayList<byte[]>();//写入文件数据
     public boolean isRecording = false;// 录音线程控制标记
     private boolean isWriting = false;// 录音线程控制标记
     private String savePcmPath ;//保存pcm文件路径
@@ -45,12 +45,11 @@ public class RecordClient {
         public void run() {
             try {
                 /**
-                 * 此处有可能AudioRecord还没有初始化成功
+                 * 此处有可能AudioRecord还没有初始化成功，audioRecordBufferSize为0
                  */
                 int audioRecordBufferSize = mRecordProcessor.getAudioRecordBufferSize();
                 short[] buffer = new short[audioRecordBufferSize];
                 while (isRecording) {
-                    // 从MIC保存数据到缓冲区
                     if (mRevCycleBuffer.getUnreadLen() <= 0) {
                         //[todo]truyayong 这里生产者消费者模型，这里实现不够好
                         Thread.sleep(20);
@@ -58,33 +57,33 @@ public class RecordClient {
                     }
 
                     /**
-                     *
+                     * 此处再check一下buffer是否已经初始化成功
                      */
                     if (buffer.length <= 0) {
                         audioRecordBufferSize = mRecordProcessor.getAudioRecordBufferSize();
                         buffer = new short[audioRecordBufferSize];
                     }
-                    readsize = mRevCycleBuffer.read(buffer, audioRecordBufferSize);
+                    mReadsize = mRevCycleBuffer.read(buffer, audioRecordBufferSize);
 
-                    Log.e(TAG, "readsize : " + readsize + " buffer size : " + buffer.length);
+                    Log.e(TAG, "readsize : " + mReadsize + " buffer size : " + buffer.length);
                     synchronized (inBuf) {
-                        for (int i = 0; i < readsize; i += rateX) {
+                        for (int i = 0; i < mReadsize; i += mRateX) {
                             inBuf.add(buffer[i]);
                         }
                     }
                     if (mOnRecordNotifyListner != null) {
                         mOnRecordNotifyListner.onData(inBuf);
                     }
-                    if (AudioRecord.ERROR_INVALID_OPERATION != readsize) {
-                        synchronized (write_data) {
-                            byte  bys[] = new byte[readsize*2];
+                    if (AudioRecord.ERROR_INVALID_OPERATION != mReadsize) {
+                        synchronized (mWriteData) {
+                            byte  bys[] = new byte[mReadsize*2];
                             //因为arm字节序问题，所以需要高低位交换
-                            for (int i = 0; i < readsize; i++) {
+                            for (int i = 0; i < mReadsize; i++) {
                                 byte ss[] =	getBytes(buffer[i]);
                                 bys[i*2] =ss[0];
                                 bys[i*2+1] = ss[1];
                             }
-                            write_data.add(bys);
+                            mWriteData.add(bys);
                         }
                     }
                 }
@@ -113,12 +112,12 @@ public class RecordClient {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                while (isWriting || write_data.size() > 0) {
+                while (isWriting || mWriteData.size() > 0) {
                     byte[] buffer = null;
-                    synchronized (write_data) {
-                        if(write_data.size() > 0){
-                            buffer = write_data.get(0);
-                            write_data.remove(0);
+                    synchronized (mWriteData) {
+                        if(mWriteData.size() > 0){
+                            buffer = mWriteData.get(0);
+                            mWriteData.remove(0);
                         }
                     }
                     try {
@@ -178,10 +177,6 @@ public class RecordClient {
         if (mOnRecordNotifyListner != null) {
             mOnRecordNotifyListner.onStop();
         }
-    }
-
-    public CycleBuffer getRecCycleBuffer() {
-        return mRevCycleBuffer;
     }
 
     public void setOnRecordNotifyListner(OnRecordNotifyListner listner) {
