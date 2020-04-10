@@ -1,11 +1,18 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-include_directories(src/main/cpp/include)
-include_directories(src/main/cpp/soundtouch/include)
-include_directories(src/main/cpp/soundtouch/SoundTouch)
+#cpp目录下的文件聚合为DIRSRCS变量
+aux_source_directory(src/main/cpp/ DIRSRCS)
 
+#ffmpeg头文件引入
+include_directories(src/main/cpp/include)
+#soundtouch头文件
+include_directories(src/main/cpp/soundtouch/include)
+
+#加入ffmpeg的动态库
+     #加入avcodec-57库
 add_library( avcodec-57 SHARED IMPORTED)
+     #定义avcodec-57库的本地so文件路径
 set_target_properties( avcodec-57
                        PROPERTIES IMPORTED_LOCATION
                        ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/libavcodec-57.so)
@@ -50,6 +57,7 @@ set_target_properties( swscale-4
                        PROPERTIES IMPORTED_LOCATION
                        ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/libswscale-4.so)
 
+#cpp目录编译成PlayNative动态库
 add_library( # Sets the name of the library.
              PlayNative
 
@@ -57,26 +65,8 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-              src/main/cpp/PlayNative.cpp
-              src/main/cpp/AudioProccessor.cpp
-              src/main/cpp/AudioCoder.cpp
-              src/main/cpp/NotifyApplication.cpp
-              src/main/cpp/PlaySession.cpp
-              src/main/cpp/ErrUtil.cpp
-              src/main/cpp/PacketQueue.cpp
+             ${DIRSRCS}
 
-              src/main/cpp/soundtouch/SoundTouch/AAFilter.cpp
-              src/main/cpp/soundtouch/SoundTouch/FIFOSampleBuffer.cpp
-              src/main/cpp/soundtouch/SoundTouch/FIRFilter.cpp
-              src/main/cpp/soundtouch/SoundTouch/cpu_detect_x86.cpp
-              src/main/cpp/soundtouch/SoundTouch/sse_optimized.cpp
-              src/main/cpp/soundtouch/SoundTouch/RateTransposer.cpp
-              src/main/cpp/soundtouch/SoundTouch/SoundTouch.cpp
-              src/main/cpp/soundtouch/SoundTouch/InterpolateCubic.cpp
-              src/main/cpp/soundtouch/SoundTouch/InterpolateLinear.cpp
-              src/main/cpp/soundtouch/SoundTouch/InterpolateShannon.cpp
-              src/main/cpp/soundtouch/SoundTouch/TDStretch.cpp
-              src/main/cpp/soundtouch/SoundTouch/PeakFinder.cpp
               )
 
 find_library( # Sets the name of the path variable.
@@ -86,8 +76,13 @@ find_library( # Sets the name of the path variable.
               # you want CMake to locate.
               log )
 
+#加入soundtouch子目录的CMakeLists.txt工程
+add_subdirectory(src/main/cpp)
+
+#链接所有库
 target_link_libraries( # Specifies the target library.
                        PlayNative
+                       libSound
                        avcodec-57
                        avdevice-57
                        avfilter-6
