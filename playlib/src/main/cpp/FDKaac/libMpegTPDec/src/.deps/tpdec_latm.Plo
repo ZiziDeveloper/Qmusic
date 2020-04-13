@@ -1,0 +1,43 @@
+libMpegTPDec/src/tpdec_latm.lo: libMpegTPDec/src/tpdec_latm.cpp \
+ libMpegTPDec/src/tpdec_latm.h libMpegTPDec/include/tpdec_lib.h \
+ libMpegTPDec/include/tp_data.h libSYS/include/machine_type.h \
+ /usr/include/assert.h /usr/include/_ansi.h /usr/include/newlib.h \
+ /usr/include/sys/config.h /usr/include/machine/ieeefp.h \
+ /usr/include/sys/features.h /usr/include/cygwin/config.h \
+ libSYS/include/FDK_audio.h libSYS/include/machine_type.h \
+ libSYS/include/genericStds.h libFDK/include/FDK_bitstream.h \
+ libFDK/include/FDK_bitbuffer.h libSYS/include/genericStds.h
+
+libMpegTPDec/src/tpdec_latm.h:
+
+libMpegTPDec/include/tpdec_lib.h:
+
+libMpegTPDec/include/tp_data.h:
+
+libSYS/include/machine_type.h:
+
+/usr/include/assert.h:
+
+/usr/include/_ansi.h:
+
+/usr/include/newlib.h:
+
+/usr/include/sys/config.h:
+
+/usr/include/machine/ieeefp.h:
+
+/usr/include/sys/features.h:
+
+/usr/include/cygwin/config.h:
+
+libSYS/include/FDK_audio.h:
+
+libSYS/include/machine_type.h:
+
+libSYS/include/genericStds.h:
+
+libFDK/include/FDK_bitstream.h:
+
+libFDK/include/FDK_bitbuffer.h:
+
+libSYS/include/genericStds.h:

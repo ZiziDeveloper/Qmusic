@@ -1,0 +1,28 @@
+libSYS/src/conv_string.lo: libSYS/src/conv_string.cpp \
+ libSYS/include/genericStds.h libSYS/include/machine_type.h \
+ /usr/include/assert.h /usr/include/_ansi.h /usr/include/newlib.h \
+ /usr/include/sys/config.h /usr/include/machine/ieeefp.h \
+ /usr/include/sys/features.h /usr/include/cygwin/config.h \
+ libSYS/include/conv_string.h libSYS/include/genericStds.h
+
+libSYS/include/genericStds.h:
+
+libSYS/include/machine_type.h:
+
+/usr/include/assert.h:
+
+/usr/include/_ansi.h:
+
+/usr/include/newlib.h:
+
+/usr/include/sys/config.h:
+
+/usr/include/machine/ieeefp.h:
+
+/usr/include/sys/features.h:
+
+/usr/include/cygwin/config.h:
+
+libSYS/include/conv_string.h:
+
+libSYS/include/genericStds.h:
