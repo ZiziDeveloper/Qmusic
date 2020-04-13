@@ -1,22 +1,45 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-project(soundTouchProject)
+project(FDKaacProject)
 
-include_directories(include)
-include_directories(SoundTouch)
+#include_directories(${CMAKE_CURRENT_LIST_DIR})
+#include_directories(./libSYS/include)
+#include_directories(./libFDK/include)
+#include_directories(./libAACdec/include)
+#include_directories(./libAACenc/include)
+#include_directories(./libMpegTPDec/include)
+#include_directories(./libMpegTPEnc/include)
+#include_directories(./libPCMutils/include)
+#include_directories(./libSBRdec/include)
+#include_directories(./libSBRenc/include)
+set( SOURCE_FILES )
+foreach( subdir libAACdec libAACenc
+        libFDK libMpegTPDec libMpegTPEnc libPCMutils
+        libSBRenc libSBRdec libSYS)
+    set( incdir ${CMAKE_CURRENT_LIST_DIR}/${subdir}/include )
+    set( srcdir ${CMAKE_CURRENT_LIST_DIR}/${subdir}/src )
+    include_directories(${incdir})
 
-file(GLOB_RECURSE soundtouch_native_sources SoundTouch/*)
+    file( GLOB srcfiles
+            ${srcdir}/*.cpp
+            ${srcdir}/*.h )
+
+    list( APPEND SOURCE_FILES ${srcfiles} )
+endforeach()
+
+
+
 
 
 add_library( # Sets the name of the library.
-             libSound
+             libFDKaac
 
              # Sets the library as a shared library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             ${soundtouch_native_sources}
+             ${SOURCE_FILES}
               )
 
 

@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.4.1)
 
 project(soundTouchProject)
 
-include_directories(soundtouch/include)
-include_directories(soundtouch/SoundTouch)
+include_directories(include)
+include_directories(SoundTouch)
 
-file(GLOB_RECURSE soundtouch_native_sources soundtouch/*)
+file(GLOB_RECURSE soundtouch_native_sources SoundTouch/*)
 
 
 add_library( # Sets the name of the library.

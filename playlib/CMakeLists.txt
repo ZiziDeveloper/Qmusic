@@ -8,6 +8,8 @@ aux_source_directory(src/main/cpp/ DIRSRCS)
 include_directories(src/main/cpp/include)
 #soundtouch头文件
 include_directories(src/main/cpp/soundtouch/include)
+#FDKaac头文件
+include_directories(src/main/cpp/FDKaac/)
 
 #加入ffmpeg的动态库
      #加入avcodec-57库
@@ -77,12 +79,15 @@ find_library( # Sets the name of the path variable.
               log )
 
 #加入soundtouch子目录的CMakeLists.txt工程
-add_subdirectory(src/main/cpp)
+add_subdirectory(src/main/cpp/soundtouch)
+#加入FDKaac子目录的CMakeLists.txt工程
+add_subdirectory(src/main/cpp/FDKaac)
 
 #链接所有库
 target_link_libraries( # Specifies the target library.
                        PlayNative
                        libSound
+                       libFDKaac
                        avcodec-57
                        avdevice-57
                        avfilter-6
