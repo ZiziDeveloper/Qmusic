@@ -37,13 +37,15 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     private boolean autoStart;
     private boolean keepDisplayOn;
 
-    private MediaPlayer player;
-
     private Timer timer;
     private MenuItem saveMenuItem;
     private int recorderSecondsElapsed;
     private int playerSecondsElapsed;
     private boolean isRecording;
+    /**
+     * [todo]qiuyayong 后续状态需要播放器维护
+     */
+    private boolean isPlaying;
 
     private RelativeLayout contentLayout;
     private TextView statusView;
@@ -280,6 +282,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
                 if(isPlaying()){
                     stopListening();
                 } else {
+                    isPlaying = true;
                     startListening();
                 }
             }
@@ -351,11 +354,9 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
     private void startListening(){
         try {
-            player = new MediaPlayer();
-            player.setDataSource(mFile.toString());
-            player.prepare();
-            player.start();
-
+            if (mPlayer != null && isPlaying) {
+                mPlayer.start();
+            }
 
             timerView.setText("00:00:00");
             statusView.setText(R.string.aar_playing);
@@ -370,23 +371,21 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     }
 
     private void stopListening(){
+        if (mPlayer != null && isPlaying) {
+            mPlayer.stop();
+            isPlaying = false;
+        }
+
         statusView.setText("");
         statusView.setVisibility(View.INVISIBLE);
         playView.setImageResource(R.drawable.ic_listen);
-
-        if(player != null){
-            try {
-                player.stop();
-                player.reset();
-            } catch (Exception e){ }
-        }
 
         stopTimer();
     }
 
     private boolean isPlaying(){
         try {
-            return player != null && player.isPlaying() && !isRecording;
+            return isPlaying && !isRecording;
         } catch (Exception e){
             return false;
         }

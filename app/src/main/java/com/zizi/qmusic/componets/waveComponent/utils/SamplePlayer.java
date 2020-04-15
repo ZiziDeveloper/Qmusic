@@ -41,6 +41,8 @@ public class SamplePlayer {
     private boolean mKeepPlaying;
     private OnCompletionListener mListener;
 
+    private boolean mIsPlaying;
+
     public SamplePlayer(ShortBuffer samples, int sampleRate, int channels, int numSamples) {
         mSamples = samples;
         mSampleRate = sampleRate;
@@ -96,11 +98,11 @@ public class SamplePlayer {
     }
 
     public boolean isPlaying() {
-        return mAudioTrack.getPlayState() == AudioTrack.PLAYSTATE_PLAYING;
+        return mIsPlaying;
     }
 
     public boolean isPaused() {
-        return mAudioTrack.getPlayState() == AudioTrack.PLAYSTATE_PAUSED;
+        return !mIsPlaying;
     }
 
     public void start() {
@@ -108,6 +110,7 @@ public class SamplePlayer {
             return;
         }
 
+        mIsPlaying = true;
         mKeepPlaying = true;
         mAudioTrack.flush();
         mAudioTrack.play();
@@ -144,6 +147,7 @@ public class SamplePlayer {
             mAudioTrack.pause();
             // mAudioTrack.write() should block if it cannot write.
         }
+        mIsPlaying = false;
     }
     int tag = 0;
     public void stop() {
@@ -174,6 +178,7 @@ public class SamplePlayer {
             mAudioTrack.flush();  // just in case...
             tag++; //add tag state
         }
+        mIsPlaying = false;
     }
 
     public void release() {

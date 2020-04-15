@@ -9,6 +9,8 @@ import com.zizi.playlib.CycleBuffer;
 import com.zizi.playlib.record.utils.Pcm2Wav;
 import com.zizi.playlib.record.utils.RecordLogTag;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -80,7 +82,9 @@ public class RecordClient {
                         buffer = new short[audioRecordBufferSize];
                     }
                     mReadsize = mRevCycleBuffer.read(buffer, audioRecordBufferSize);
-                    mPlayCycleBuffer.write(buffer, mReadsize);
+                    synchronized (mPlayCycleBuffer) {
+                        mPlayCycleBuffer.write(buffer, mReadsize);
+                    }
 
                     Log.e(TAG, "readsize : " + mReadsize + " buffer size : " + buffer.length);
                     synchronized (inBuf) {
@@ -120,27 +124,37 @@ public class RecordClient {
             try {
                 FileOutputStream fos2wav = null;
                 File file2wav = null;
+                BufferedOutputStream bos = null;
+                DataOutputStream dos = null;
                 try {
                     file2wav = new File(savePcmPath);
                     if (file2wav.exists()) {
                         file2wav.delete();
                     }
                     fos2wav = new FileOutputStream(file2wav);// 建立一个可存取字节的文件
+                    bos = new BufferedOutputStream(fos2wav);
+                    dos = new DataOutputStream(bos);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                while (isWriting || mWriteData.size() > 0) {
-                    byte[] buffer = null;
-                    synchronized (mWriteData) {
-                        if(mWriteData.size() > 0){
-                            buffer = mWriteData.get(0);
-                            mWriteData.remove(0);
-                        }
-                    }
+                while (isWriting ) {
+                    int audioRecordBufferSize = RecordSession.getInstance().getRecordBufSize();
+                    short[] buffer = new short[audioRecordBufferSize];
+//                    synchronized (mWriteData) {
+//                        if(mWriteData.size() > 0){
+//                            buffer = mWriteData.get(0);
+//                            mWriteData.remove(0);
+//                        }
+//                    }
+                    int readSize;
+                    readSize = mPlayCycleBuffer.read(buffer, audioRecordBufferSize);
+
                     try {
-                        if(buffer != null){
-                            fos2wav.write(buffer);
-                            fos2wav.flush();
+                        if(buffer != null && readSize > 0){
+                            for (int i = 0; i < readSize; i++) {
+                                dos.writeShort(Short.reverseBytes(buffer[i]));
+                                dos.flush();
+                            }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -148,8 +162,10 @@ public class RecordClient {
                 }
 
                 fos2wav.close();
+                bos.close();
+                dos.close();
                 Pcm2Wav p2w = new Pcm2Wav();//将pcm格式转换成wav 其实就加了一个44字节的头信息
-                p2w.convertAudioFiles(savePcmPath, saveWavPath);
+                p2w.convertAudioFiles(savePcmPath, saveWavPath,44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
             } catch (Exception e) {
                 Log.e(TAG, "mWrittingRunnable Exception e : ", e);
             }
@@ -184,7 +200,7 @@ public class RecordClient {
         mRecordProcessor.proccessStart();
         mReceiveRecordThread.start();
         mWriteRunnableThread.start();
-        mAudioPlayProcessor.proccessStart();
+//        mAudioPlayProcessor.proccessStart();
         if (mOnRecordNotifyListner != null) {
             mOnRecordNotifyListner.onStart();
         }
@@ -194,7 +210,7 @@ public class RecordClient {
         isRecording = false;
         isWriting = false;
         mRecordProcessor.proccessStop();
-        mAudioPlayProcessor.proccessStop();
+//        mAudioPlayProcessor.proccessStop();
         if (mOnRecordNotifyListner != null) {
             mOnRecordNotifyListner.onStop();
         }

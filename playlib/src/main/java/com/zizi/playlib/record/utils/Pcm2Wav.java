@@ -1,12 +1,14 @@
 package com.zizi.playlib.record.utils;
 
+import android.media.AudioFormat;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
 public class Pcm2Wav
 {
 
-    public void convertAudioFiles(String src, String target) throws Exception
+    public void convertAudioFiles(String src, String target,int sampleRateInHz, int channelConfig, int audioFormat) throws Exception
     {
         FileInputStream fis = new FileInputStream(src);
         FileOutputStream fos = new FileOutputStream(target);
@@ -26,10 +28,18 @@ public class Pcm2Wav
         WaveHeader header = new WaveHeader();
         header.fileLength = PCMSize + (44 - 8);
         header.FmtHdrLeth = 16;
-        header.BitsPerSample = 16;
-        header.Channels = 1;
+        if (audioFormat == AudioFormat.ENCODING_PCM_16BIT) {
+            header.BitsPerSample = 16;
+        } else {
+            header.BitsPerSample = 8;
+        }
+        if (channelConfig == AudioFormat.CHANNEL_OUT_STEREO) {
+            header.Channels = 2;
+        } else {
+            header.Channels = 1;
+        }
         header.FormatTag = 0x0001;
-        header.SamplesPerSec = 16000;
+        header.SamplesPerSec = sampleRateInHz;
         header.BlockAlign = (short) (header.Channels * header.BitsPerSample / 8);
         header.AvgBytesPerSec = header.BlockAlign * header.SamplesPerSec;
         header.DataHdrLeth = PCMSize;
