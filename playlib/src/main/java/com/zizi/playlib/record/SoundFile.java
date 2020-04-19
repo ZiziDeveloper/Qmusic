@@ -22,6 +22,9 @@ import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
 
+/**
+ * 音频硬解码
+ */
 public class SoundFile {
     private ProgressListener mProgressListener = null;
     private File mInputFile = null;

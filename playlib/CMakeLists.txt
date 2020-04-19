@@ -9,7 +9,7 @@ include_directories(src/main/cpp/include)
 #soundtouch头文件
 include_directories(src/main/cpp/soundtouch/include)
 #FDKaac头文件
-include_directories(src/main/cpp/FDKaac/)
+include_directories(src/main/cpp/encoder/FDKaac/)
 
 #加入ffmpeg的动态库
      #加入avcodec-57库
@@ -81,7 +81,7 @@ find_library( # Sets the name of the path variable.
 #加入soundtouch子目录的CMakeLists.txt工程
 add_subdirectory(src/main/cpp/soundtouch)
 #加入FDKaac子目录的CMakeLists.txt工程
-add_subdirectory(src/main/cpp/FDKaac)
+add_subdirectory(src/main/cpp/encoder/FDKaac)
 
 #链接所有库
 target_link_libraries( # Specifies the target library.
