@@ -67,23 +67,6 @@ public class SamplePlayer {
                 mBuffer.length * 2,
                 AudioTrack.MODE_STREAM);
         // Check when player played all the given data and notify user if mListener is set.
-        mAudioTrack.setNotificationMarkerPosition(mNumSamples - 1);  // Set the marker to the end.设定一个marker位置，当声音播放到这个位置时，就启动onMarkerReached 方法。
-        mAudioTrack.setPlaybackPositionUpdateListener(
-                new AudioTrack.OnPlaybackPositionUpdateListener() {
-                    @Override
-                    public void onPeriodicNotification(AudioTrack track) {
-                        //LogU.i("1", "1");
-                    }
-
-                    @Override
-                    public void onMarkerReached(AudioTrack track) {
-                        //LogU.i("2", "2");
-                        stop();
-                        if (mListener != null) {
-                            mListener.onCompletion();
-                        }
-                    }
-                });
         mPlayThread = null;
         mKeepPlaying = true;
         mListener = null;
@@ -136,6 +119,14 @@ public class SamplePlayer {
                     // 使用以ByteBuffer為參數的write方法
                     mAudioTrack.write(mBuffer, 0, mBuffer.length);//write是从你的buffer里取数据，write到audiotrack的缓冲中去，而且每次只能write有限的长度，因为缓冲空间是有限的
 
+                }
+                /**
+                 * 流式播放的时候，跳出循环说明已经播放完毕
+                 */
+                mIsPlaying = false;
+                if (mListener != null) {
+                    mListener.onCompletion();
+                    SamplePlayer.this.stop();
                 }
             }
         };

@@ -124,7 +124,7 @@ public class RecordProcessor extends Thread {
         if (audioDeviceInfo != null) {
             for (int i = 0; i < audioDeviceInfo.getChannelCounts().length; i++) {
                 if (audioDeviceInfo.getChannelCounts()[i] == 2) {
-                    channels = AudioFormat.CHANNEL_IN_MONO;
+                    channels = AudioFormat.CHANNEL_IN_STEREO;
                     break;
                 } else {
                     channels = AudioFormat.CHANNEL_IN_MONO;

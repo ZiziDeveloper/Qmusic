@@ -11,6 +11,7 @@ import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,7 +32,7 @@ import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AudioRecorderActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, View.OnClickListener {
+public class AudioRecorderActivity extends AppCompatActivity implements View.OnClickListener , SamplePlayer.OnCompletionListener{
 
     private int color;
     private boolean autoStart;
@@ -42,10 +43,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     private int recorderSecondsElapsed;
     private int playerSecondsElapsed;
     private boolean isRecording;
-    /**
-     * [todo]qiuyayong 后续状态需要播放器维护
-     */
-    private boolean isPlaying;
 
     private RelativeLayout contentLayout;
     private TextView statusView;
@@ -166,18 +163,20 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
         mFile = new File(U.DATA_DIRECTORY + mFileName + ".wav");
         mLoadingKeepGoing = true;
         // Load the sound file in a background thread
+        try {
+            mSoundFile = SoundFile.create(mFile.getAbsolutePath(),null);
+            if (mSoundFile == null) {
+                return;
+            }
+            mPlayer = new SamplePlayer(mSoundFile);
+            mPlayer.setOnCompletionListener(this);
+        } catch (final Exception e) {
+            e.printStackTrace();
+            return;
+        }
         mLoadSoundFileThread = new Thread() {
             public void run() {
-                try {
-                    mSoundFile = SoundFile.create(mFile.getAbsolutePath(),null);
-                    if (mSoundFile == null) {
-                        return;
-                    }
-                    mPlayer = new SamplePlayer(mSoundFile);
-                } catch (final Exception e) {
-                    e.printStackTrace();
-                    return;
-                }
+
                 if (mLoadingKeepGoing) {
                     Runnable runnable = new Runnable() {
                         public void run() {
@@ -255,8 +254,13 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
 
     @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
-        stopListening();
+    public void onCompletion() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                stopListening();
+            }
+        });
     }
 
 
@@ -282,7 +286,6 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
                 if(isPlaying()){
                     stopListening();
                 } else {
-                    isPlaying = true;
                     startListening();
                 }
             }
@@ -354,7 +357,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
     private void startListening(){
         try {
-            if (mPlayer != null && isPlaying) {
+            if (mPlayer != null && !mPlayer.isPlaying()) {
                 mPlayer.start();
             }
 
@@ -371,9 +374,8 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
     }
 
     private void stopListening(){
-        if (mPlayer != null && isPlaying) {
+        if (mPlayer != null && mPlayer.isPlaying()) {
             mPlayer.stop();
-            isPlaying = false;
         }
 
         statusView.setText("");
@@ -385,7 +387,7 @@ public class AudioRecorderActivity extends AppCompatActivity implements MediaPla
 
     private boolean isPlaying(){
         try {
-            return isPlaying && !isRecording;
+            return mPlayer!=null && mPlayer.isPlaying() && !isRecording;
         } catch (Exception e){
             return false;
         }
