@@ -5,23 +5,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Rect;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
-import android.media.MediaRecorder;
-import android.os.AsyncTask;
 import android.os.Handler.Callback;
-import android.os.Message;
-import android.util.Log;
 import android.view.SurfaceView;
 
-import com.zizi.playlib.CycleBuffer;
 import com.zizi.playlib.record.RecordClient;
-import com.zizi.qmusic.componets.waveComponent.utils.Pcm2Wav;
 import com.zizi.qmusic.componets.waveComponent.view.WaveSurfaceView;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 

@@ -20,9 +20,9 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.zizi.playlib.record.SamplePlayer;
+import com.zizi.playlib.record.SoundFile;
 import com.zizi.qmusic.componets.waveComponent.draw.WaveCanvas;
-import com.zizi.qmusic.componets.waveComponent.utils.SamplePlayer;
-import com.zizi.qmusic.componets.waveComponent.utils.SoundFile;
 import com.zizi.qmusic.componets.waveComponent.view.FileToWaveView;
 import com.zizi.qmusic.componets.waveComponent.view.WaveSurfaceView;
 import com.zizi.qmusic.qmusic.R;

@@ -25,7 +25,7 @@ import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.zizi.qmusic.componets.waveComponent.utils.SoundFile;
+import com.zizi.playlib.record.SoundFile;
 import com.zizi.qmusic.qmusic.R;
 
 
