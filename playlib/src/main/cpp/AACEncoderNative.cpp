@@ -5,7 +5,6 @@
 #include <string>
 #include "AndroidLog.h"
 
-_JavaVM* javaVM = nullptr;
 
 extern "C" {
 
@@ -21,7 +20,6 @@ extern "C" {
      */
     jlong init(JNIEnv *env, jobject obj, jint channels, jint sampleRate, jint brate, jintArray frameLen) {
         //__android_log_print(ANDROID_LOG_INFO, "Mp3Encode_init", " Mp3Encode_init start ");
-
         return (long) 0;
     }
 
@@ -32,6 +30,7 @@ extern "C" {
      * @param aacHandle
      */
     void destroy(JNIEnv *env, jobject obj, jlong aacHandle) {
+        LOGE("com/zizi/playlib/codec/AACEncodeJniProxy: destroy");
     }
 
     /**
@@ -52,7 +51,7 @@ extern "C" {
         return result;
     }
 
-    jint RegisterNativeMethods(JNIEnv *env) {
+    jint AACEncodeRegisterNativeMethods(JNIEnv *env) {
         jclass clazz = env->FindClass("com/zizi/playlib/codec/AACEncodeJniProxy");
         if (clazz == nullptr) {
             LOGE("can't find class: com/zizi/playlib/codec/AACEncodeJniProxy");
@@ -65,20 +64,4 @@ extern "C" {
         };
         return env->RegisterNatives(clazz, methods_Proxy, sizeof(methods_Proxy) / sizeof(methods_Proxy[0]));
     }
-}
-
-extern "C"
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
-{
-    jint result = -1;
-    javaVM = vm;
-    JNIEnv *env;
-    if(vm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK)
-    {
-
-        return result;
-    }
-    result = RegisterNativeMethods(env);
-    LOGI("RegisterNativeMethods result : %d ", result);
-    return JNI_VERSION_1_4;
 }
