@@ -14,6 +14,7 @@ project(FDKaacProject)
 #include_directories(./libSBRdec/include)
 #include_directories(./libSBRenc/include)
 set( SOURCE_FILES )
+include_directories( ${CMAKE_CURRENT_LIST_DIR})
 foreach( subdir libAACdec libAACenc
         libFDK libMpegTPDec libMpegTPEnc libPCMutils
         libSBRenc libSBRdec libSYS)
@@ -27,6 +28,9 @@ foreach( subdir libAACdec libAACenc
 
     list( APPEND SOURCE_FILES ${srcfiles} )
 endforeach()
+list( APPEND SOURCE_FILES ${CMAKE_CURRENT_LIST_DIR}/AACEncoder.cpp )
+list( APPEND SOURCE_FILES ${CMAKE_CURRENT_LIST_DIR}/aac-enc.c )
+list( APPEND SOURCE_FILES ${CMAKE_CURRENT_LIST_DIR}/wavreader.c )
 
 
 
