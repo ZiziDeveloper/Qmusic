@@ -3,24 +3,15 @@ cmake_minimum_required(VERSION 3.4.1)
 
 project(FDKaacProject)
 
-#include_directories(${CMAKE_CURRENT_LIST_DIR})
-#include_directories(./libSYS/include)
-#include_directories(./libFDK/include)
-#include_directories(./libAACdec/include)
-#include_directories(./libAACenc/include)
-#include_directories(./libMpegTPDec/include)
-#include_directories(./libMpegTPEnc/include)
-#include_directories(./libPCMutils/include)
-#include_directories(./libSBRdec/include)
-#include_directories(./libSBRenc/include)
+#头文件已经在主CMakeLists引入了，这里不需要再引入
 set( SOURCE_FILES )
-include_directories( ${CMAKE_CURRENT_LIST_DIR})
+#include_directories( ${CMAKE_CURRENT_LIST_DIR})
 foreach( subdir libAACdec libAACenc
         libFDK libMpegTPDec libMpegTPEnc libPCMutils
         libSBRenc libSBRdec libSYS)
     set( incdir ${CMAKE_CURRENT_LIST_DIR}/${subdir}/include )
     set( srcdir ${CMAKE_CURRENT_LIST_DIR}/${subdir}/src )
-    include_directories(${incdir})
+#    include_directories(${incdir})
 
     file( GLOB srcfiles
             ${srcdir}/*.cpp
