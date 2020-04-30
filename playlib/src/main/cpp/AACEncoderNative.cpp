@@ -6,22 +6,31 @@
 #include "AndroidLog.h"
 #include "AACEncoder.h"
 
-
+AACEncoder* mAACEncoder;
 extern "C" {
 
     /**
      * 初始化
      * @param env
      * @param obj
-     * @param channels
-     * @param sampleRate
-     * @param brate
-     * @param frameLen
+     * @param channels 声道数：1，单声道；2，双声道
+     * @param sampleRate 采样率
+     * @param brate 码率
+     * @param frameLen 帧长
      * @return
      */
     jlong init(JNIEnv *env, jobject obj, jint channels, jint sampleRate, jint brate, jintArray frameLen) {
-        //__android_log_print(ANDROID_LOG_INFO, "Mp3Encode_init", " Mp3Encode_init start ");
-        return (long) 0;
+        if ((sampleRate > 48000) || (sampleRate < 16000) || (channels <= 0)
+            || (channels > 2) || (brate < 32000) || (brate > 320000)) {
+            return -1;
+        }
+        mAACEncoder = new AACEncoder();
+        int realFrameLen;
+        long encodePtr = mAACEncoder->init(channels, sampleRate, brate, &realFrameLen);
+        int* frameLength = env->GetIntArrayElements(frameLen, nullptr);
+        frameLength[0] = realFrameLen;
+        env->ReleaseIntArrayElements(frameLen, frameLength, 0);
+        return encodePtr;
     }
 
     /**
@@ -32,6 +41,9 @@ extern "C" {
      */
     void destroy(JNIEnv *env, jobject obj, jlong aacHandle) {
         LOGE("com/zizi/playlib/codec/AACEncodeJniProxy: destroy");
+        mAACEncoder->destroy(aacHandle);
+        delete(mAACEncoder);
+        mAACEncoder = nullptr;
     }
 
     /**
