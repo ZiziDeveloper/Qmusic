@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
+import com.zizi.playlib.codec.AACEncodeJniProxy;
 import com.zizi.qmusic.qmusic.R;
 import com.zizi.qmusic.record.AndroidAudioRecorder;
 
@@ -52,5 +53,8 @@ public class MainActivity extends AppCompatActivity {
                 .setRequestCode(REQUEST_RECORD_AUDIO)
                 // Start recording
                 .record();
+        AACEncodeJniProxy proxy = new AACEncodeJniProxy();
+        int []frame = new int[1];
+        proxy.init(2, 44100, 128000, frame);
     }
 }

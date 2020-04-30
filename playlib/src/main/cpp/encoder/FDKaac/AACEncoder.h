@@ -9,8 +9,11 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
+#include <memory>
 
 #include "android/log.h"
+#include "EncoderNode.h"
+
 #define LOGI(FORMAT,...) __android_log_print(ANDROID_LOG_INFO,"qmusic_encoder",FORMAT,##__VA_ARGS__);
 #define LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR,"qmusic_encoder",FORMAT,##__VA_ARGS__);
 
@@ -24,7 +27,8 @@ typedef struct _FDKaacEncoder {
 
 class AACEncoder {
 private:
-    FDKaacEncoder* mEncoder;
+    FDKaacEncoder* mEncoder{nullptr};
+    std::unique_ptr<EncoderNode> mEncodeNode;
     /**
      * AACENC_AOT : 1,AAC Main; 2,AAC LC; 3, AAC SSR; 8, CELP
      */
@@ -51,10 +55,12 @@ public:
     /**
      * 编码函数
      * @param ptrEncoder 编码器指针
-     * @param ptrBuffer 待编码数据
-     * @param len 数据长度
+     * @param ptrInBuffer 待编码数据
+     * @param ptrOutBuffer 编码之后的数据
+     * @param inBufLen 待编码缓存长度
+     * @param outBufLen 编码之后缓存长度
      */
-    void encode(int64_t ptrEncoder, short* ptrBuffer, int len);
+    void encode(int64_t ptrEncoder, short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen, int outBufLen);
 
     /**
      * 销毁编码器

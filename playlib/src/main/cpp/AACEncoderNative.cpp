@@ -42,8 +42,10 @@ extern "C" {
     void destroy(JNIEnv *env, jobject obj, jlong aacHandle) {
         LOGE("com/zizi/playlib/codec/AACEncodeJniProxy: destroy");
         mAACEncoder->destroy(aacHandle);
-        delete(mAACEncoder);
-        mAACEncoder = nullptr;
+        if (mAACEncoder != nullptr) {
+            delete mAACEncoder ;
+            mAACEncoder = nullptr;
+        }
     }
 
     /**
@@ -51,16 +53,21 @@ extern "C" {
      * @param env
      * @param obj
      * @param aacHandle
-     * @param buffer
-     * @param len
+     * @param buffer 待编码缓存
+     * @param len 待编码缓存长度
      * @return
      */
     jbyteArray encode(JNIEnv *env, jobject obj, jlong aacHandle, jshortArray buffer, jint len) {
-
+        if (buffer == nullptr || len <= 0) {
+            return nullptr;
+        }
+        short *inBuffer = env->GetShortArrayElements(buffer, nullptr);
+        uint8_t  outbuf[20480];
+        mAACEncoder->encode(aacHandle, inBuffer, outbuf, len, 20480);
 
         jbyteArray result = (env)->NewByteArray(100);
 
-        (env)->ReleaseShortArrayElements(buffer, nullptr, 0);
+        (env)->ReleaseShortArrayElements(buffer, inBuffer, 0);
         return result;
     }
 

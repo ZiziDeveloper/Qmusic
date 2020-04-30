@@ -8,14 +8,23 @@
 AACEncoder::AACEncoder() {}
 
 AACEncoder::~AACEncoder() {
-
+    if (mEncoder != nullptr) {
+        free(mEncoder);
+        mEncoder = nullptr;
+    }
 }
 
 int64_t AACEncoder::init(int channels, int sampleRate, int brate, int *ptrFrameLen) {
+    if (mEncoder != nullptr) {
+        free(mEncoder);
+        mEncoder = nullptr;
+    }
     mEncoder = (FDKaacEncoder*)malloc(sizeof(FDKaacEncoder));
     memset(mEncoder, 0, sizeof(FDKaacEncoder));
     mEncoder->input_size = 0;
     mEncoder->channels = channels;
+
+    mEncodeNode.reset(new EncoderNode());
 
     /**
      * 初始化编码器句柄（申请内存）
@@ -126,13 +135,34 @@ int64_t AACEncoder::init(int channels, int sampleRate, int brate, int *ptrFrameL
      * 编码时候输入的字节数：声道数 * 16bit/8bit * 编码器每次输入的采样数
      */
     mEncoder->input_size = mEncoder->channels * 2 * mEncoder->info.frameLength;
+    *ptrFrameLen = mEncoder->input_size;
+    LOGI("create fdkaac encoder success \n ");
     return 0;
 }
 
-void AACEncoder::encode(int64_t ptrEncoder, short *ptrBuffer, int len) {
+void AACEncoder::encode(int64_t ptrEncoder, short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen, int outBufLen) {
+    if (ptrEncoder == 0 || ptrInBuffer == nullptr || ptrOutBuffer == nullptr) {
+        LOGE("encode errorr  ptrEncoder : %ld \n ", ptrEncoder);
+        return;
+    }
+    mEncoder = (FDKaacEncoder*)(ptrEncoder);
+    AACENC_BufDesc inBufDesc{0}, outBufDesc{0};
+    AACENC_InArgs inArgs{0};
+    AACENC_OutArgs outArgs{0};
+    AACENC_BufferIdentifier inBufIndentifier = IN_AUDIO_DATA;
+    AACENC_BufferIdentifier outBufIndentifier = OUT_BITSTREAM_DATA;
+
 
 }
 
 void AACEncoder::destroy(int64_t ptrEncoder) {
-
+    mEncoder = (FDKaacEncoder*)(ptrEncoder);
+    if (mEncoder != nullptr) {
+        if (!&(mEncoder->handle)) {
+            aacEncClose(&(mEncoder->handle));
+            mEncoder->handle = nullptr;
+        }
+        free(mEncoder);
+    }
+    mEncoder = nullptr;
 }
