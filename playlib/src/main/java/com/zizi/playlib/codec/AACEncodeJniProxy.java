@@ -12,11 +12,11 @@ public class AACEncodeJniProxy {
         System.loadLibrary("PlayNative");
     }
 
-    public native long init(int channel, int sampleRate, int brate, int[] frameLen);
+    public native void init(int channel, int sampleRate, int brate, int[] frameLen);
 
-    public native void destroy(long aacPtr);
+    public native void destroy();
 
-    public native byte[] encode(long aacPtr, short[] buffer, int len);
+    public native byte[] encode(short[] buffer, int len);
 
     public native byte[] flush(long aacPtr);
 

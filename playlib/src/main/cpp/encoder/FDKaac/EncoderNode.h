@@ -12,10 +12,10 @@ public:
 
     virtual ~EncoderNode();
 
-    HANDLE_AACENCODER mHandle;
-    AACENC_InfoStruct mInfo;
-    int mInputSize;
-    int mChannels;
+    HANDLE_AACENCODER mHandle{nullptr};
+    AACENC_InfoStruct mInfo{0};
+    int mInputSize{0};
+    int mChannels{0};
 };
 
 

@@ -17,18 +17,9 @@
 #define LOGI(FORMAT,...) __android_log_print(ANDROID_LOG_INFO,"qmusic_encoder",FORMAT,##__VA_ARGS__);
 #define LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR,"qmusic_encoder",FORMAT,##__VA_ARGS__);
 
-typedef struct _FDKaacEncoder {
-    HANDLE_AACENCODER handle;
-    AACENC_InfoStruct info;
-    int input_size;
-    int channels;
-
-} FDKaacEncoder;
-
 class AACEncoder {
 private:
-    FDKaacEncoder* mEncoder{nullptr};
-    std::unique_ptr<EncoderNode> mEncodeNode;
+    std::unique_ptr<EncoderNode> mpEncodeNode{nullptr};
     /**
      * AACENC_AOT : 1,AAC Main; 2,AAC LC; 3, AAC SSR; 8, CELP
      */
@@ -60,13 +51,13 @@ public:
      * @param inBufLen 待编码缓存长度
      * @param outBufLen 编码之后缓存长度
      */
-    void encode(int64_t ptrEncoder, short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen, int outBufLen);
+    void encode(short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen, int outBufLen);
 
     /**
      * 销毁编码器
      * @param ptrEncoder 编码器指针
      */
-    void destroy(int64_t ptrEncoder);
+    void destroy();
 
 };
 

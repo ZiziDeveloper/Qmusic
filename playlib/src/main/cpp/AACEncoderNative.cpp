@@ -19,10 +19,10 @@ extern "C" {
      * @param frameLen 帧长
      * @return
      */
-    jlong init(JNIEnv *env, jobject obj, jint channels, jint sampleRate, jint brate, jintArray frameLen) {
+    void init(JNIEnv *env, jobject obj, jint channels, jint sampleRate, jint brate, jintArray frameLen) {
         if ((sampleRate > 48000) || (sampleRate < 16000) || (channels <= 0)
             || (channels > 2) || (brate < 32000) || (brate > 320000)) {
-            return -1;
+            return;
         }
         mAACEncoder = new AACEncoder();
         int realFrameLen;
@@ -30,7 +30,7 @@ extern "C" {
         int* frameLength = env->GetIntArrayElements(frameLen, nullptr);
         frameLength[0] = realFrameLen;
         env->ReleaseIntArrayElements(frameLen, frameLength, 0);
-        return encodePtr;
+        return ;
     }
 
     /**
@@ -39,9 +39,9 @@ extern "C" {
      * @param obj
      * @param aacHandle
      */
-    void destroy(JNIEnv *env, jobject obj, jlong aacHandle) {
+    void destroy(JNIEnv *env, jobject obj) {
         LOGE("com/zizi/playlib/codec/AACEncodeJniProxy: destroy");
-        mAACEncoder->destroy(aacHandle);
+        mAACEncoder->destroy();
         if (mAACEncoder != nullptr) {
             delete mAACEncoder ;
             mAACEncoder = nullptr;
@@ -57,13 +57,13 @@ extern "C" {
      * @param len 待编码缓存长度
      * @return
      */
-    jbyteArray encode(JNIEnv *env, jobject obj, jlong aacHandle, jshortArray buffer, jint len) {
+    jbyteArray encode(JNIEnv *env, jobject obj, jshortArray buffer, jint len) {
         if (buffer == nullptr || len <= 0) {
             return nullptr;
         }
         short *inBuffer = env->GetShortArrayElements(buffer, nullptr);
         uint8_t  outbuf[20480];
-        mAACEncoder->encode(aacHandle, inBuffer, outbuf, len, 20480);
+        mAACEncoder->encode(inBuffer, outbuf, len, 20480);
 
         jbyteArray result = (env)->NewByteArray(100);
 
@@ -78,9 +78,9 @@ extern "C" {
             return JNI_ERR;
         }
         JNINativeMethod methods_Proxy[] = {
-                {"init",    "(III[I)J", (void *) init},
-                {"destroy", "(J)V",     (void *) destroy},
-                {"encode",  "(J[SI)[B", (void *) encode}
+                {"init",    "(III[I)V", (void *) init},
+                {"destroy", "()V",     (void *) destroy},
+                {"encode",  "([SI)[B", (void *) encode}
         };
         return env->RegisterNatives(clazz, methods_Proxy, sizeof(methods_Proxy) / sizeof(methods_Proxy[0]));
     }
