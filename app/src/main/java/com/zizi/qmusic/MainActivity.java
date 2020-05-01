@@ -56,5 +56,7 @@ public class MainActivity extends AppCompatActivity {
         AACEncodeJniProxy proxy = new AACEncodeJniProxy();
         int []frame = new int[1];
         proxy.init(2, 44100, 128000, frame);
+        short[] buffer = new short[2];
+        proxy.encode(buffer, 2);
     }
 }

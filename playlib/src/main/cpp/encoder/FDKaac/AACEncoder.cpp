@@ -140,9 +140,36 @@ void AACEncoder::encode(short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen,
     AACENC_BufDesc inBufDesc{0}, outBufDesc{0};
     AACENC_InArgs inArgs{0};
     AACENC_OutArgs outArgs{0};
-    AACENC_BufferIdentifier inBufIndentifier = IN_AUDIO_DATA;
-    AACENC_BufferIdentifier outBufIndentifier = OUT_BITSTREAM_DATA;
+    int inBufIndentifier = IN_AUDIO_DATA;
+    int outBufIndentifier = OUT_BITSTREAM_DATA;
+    void *inPtr, *outPtr;
+    AACENC_ERROR error;
 
+    inPtr = ptrInBuffer;
+    outPtr = ptrOutBuffer;
+
+    //输入缓存的字节
+    int inByteSize = inBufLen * mpEncodeNode->mChannels;
+    inBufDesc.bufSizes = &inByteSize;
+    //每个采样的字节数
+    int inElemSize = 2;
+    inBufDesc.bufElSizes = &inElemSize;
+    //输入缓冲的类型
+    inBufDesc.bufferIdentifiers = &inBufIndentifier;
+    //输入缓冲地址
+    inBufDesc.bufs = &inPtr;
+    //缓冲的数量
+    inBufDesc.numBufs = 1;
+    //输入的采样数（需要乘上声道数）
+    inArgs.numInSamples = inBufLen;
+
+    int outByteSize = outBufLen;
+    outBufDesc.bufSizes = &outByteSize;
+    int outElemSize = 1;
+    outBufDesc.bufElSizes = &outElemSize;
+    outBufDesc.bufferIdentifiers = &outBufIndentifier;
+    outBufDesc.bufs = &outPtr;
+    outBufDesc.numBufs = 1;
 
 }
 
