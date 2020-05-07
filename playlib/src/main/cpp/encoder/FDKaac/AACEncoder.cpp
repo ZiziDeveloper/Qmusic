@@ -131,10 +131,10 @@ int64_t AACEncoder::init(int channels, int sampleRate, int brate, int *ptrFrameL
     return 0;
 }
 
-void AACEncoder::encode(short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen, int outBufLen) {
+int AACEncoder::encode(short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen, int outBufLen, int *pNumOutBytes) {
     if (ptrInBuffer == nullptr || ptrOutBuffer == nullptr) {
         LOGE("encode errorr  ");
-        return;
+        return -1;
     }
 
     AACENC_BufDesc inBufDesc{0}, outBufDesc{0};
@@ -148,7 +148,7 @@ void AACEncoder::encode(short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen,
     inPtr = ptrInBuffer;
     outPtr = ptrOutBuffer;
 
-    //输入缓存的字节
+    //输入缓存的字节数
     int inByteSize = inBufLen * mpEncodeNode->mChannels;
     inBufDesc.bufSizes = &inByteSize;
     //每个采样的字节数
@@ -171,6 +171,18 @@ void AACEncoder::encode(short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen,
     outBufDesc.bufs = &outPtr;
     outBufDesc.numBufs = 1;
 
+    error = aacEncEncode(mpEncodeNode->mHandle, &inBufDesc, &outBufDesc, &inArgs, &outArgs);
+    if (error != AACENC_OK) {
+        LOGE("aacEncEncode error : %d ", error);
+        return error;
+    }
+
+    if (outArgs.numOutBytes == 0) {
+        LOGE("outArgs.numOutBytes == 0");
+        return -1;
+    }
+    *pNumOutBytes = outArgs.numOutBytes;
+    return AACENC_OK;
 }
 
 void AACEncoder::destroy() {

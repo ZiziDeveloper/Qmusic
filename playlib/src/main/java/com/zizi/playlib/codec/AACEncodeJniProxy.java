@@ -12,7 +12,7 @@ public class AACEncodeJniProxy {
         System.loadLibrary("PlayNative");
     }
 
-    public native void init(int channel, int sampleRate, int brate, int[] frameLen);
+    public native int init(int channel, int sampleRate, int brate, int[] frameLen);
 
     public native void destroy();
 

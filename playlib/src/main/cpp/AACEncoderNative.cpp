@@ -19,18 +19,18 @@ extern "C" {
      * @param frameLen 帧长
      * @return
      */
-    void init(JNIEnv *env, jobject obj, jint channels, jint sampleRate, jint brate, jintArray frameLen) {
+    jint init(JNIEnv *env, jobject obj, jint channels, jint sampleRate, jint brate, jintArray frameLen) {
         if ((sampleRate > 48000) || (sampleRate < 16000) || (channels <= 0)
             || (channels > 2) || (brate < 32000) || (brate > 320000)) {
-            return;
+            return -1;
         }
         mAACEncoder = new AACEncoder();
         int realFrameLen;
-        long encodePtr = mAACEncoder->init(channels, sampleRate, brate, &realFrameLen);
+        int err = mAACEncoder->init(channels, sampleRate, brate, &realFrameLen);
         int* frameLength = env->GetIntArrayElements(frameLen, nullptr);
         frameLength[0] = realFrameLen;
         env->ReleaseIntArrayElements(frameLen, frameLength, 0);
-        return ;
+        return err;
     }
 
     /**
@@ -63,11 +63,18 @@ extern "C" {
         }
         short *inBuffer = env->GetShortArrayElements(buffer, nullptr);
         uint8_t  outbuf[20480];
-        mAACEncoder->encode(inBuffer, outbuf, len, 20480);
 
-        jbyteArray result = (env)->NewByteArray(100);
+        int numOutBytes = 0;
+        int error = mAACEncoder->encode(inBuffer, outbuf, len, 20480, &numOutBytes);
+        if (error != AACENC_OK) {
+            env->ReleaseShortArrayElements(buffer, inBuffer, 0);
+            return nullptr;
+        }
 
-        (env)->ReleaseShortArrayElements(buffer, inBuffer, 0);
+        jbyteArray  result = env->NewByteArray(numOutBytes);
+        env->SetByteArrayRegion(result, 0, numOutBytes, (jbyte*)outbuf);
+
+        env->ReleaseShortArrayElements(buffer, inBuffer, 0);
         return result;
     }
 
@@ -78,7 +85,7 @@ extern "C" {
             return JNI_ERR;
         }
         JNINativeMethod methods_Proxy[] = {
-                {"init",    "(III[I)V", (void *) init},
+                {"init",    "(III[I)I", (void *) init},
                 {"destroy", "()V",     (void *) destroy},
                 {"encode",  "([SI)[B", (void *) encode}
         };

@@ -6,6 +6,7 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import com.zizi.playlib.CycleBuffer;
+import com.zizi.playlib.codec.AACEncodeJniProxy;
 import com.zizi.playlib.record.utils.Pcm2Wav;
 import com.zizi.playlib.record.utils.RecordLogTag;
 
@@ -42,6 +43,16 @@ public class RecordClient {
      * 播放录音数据缓存
      */
     private CycleBuffer mPlayCycleBuffer;
+
+    /**
+     * 编码数据缓存
+     */
+    private CycleBuffer mEncodeCycleBuffer;
+    /**
+     * 编码音频数据线程
+     */
+    private EncodeProcessor mEncodeProcessor;
+
     private Thread mReceiveRecordThread;
     private Thread mWriteRunnableThread;
     private OnRecordNotifyListner mOnRecordNotifyListner;
@@ -54,6 +65,9 @@ public class RecordClient {
     private boolean isWriting = false;// 录音线程控制标记
     private String savePcmPath ;//保存pcm文件路径
     private String saveWavPath;//保存wav文件路径
+    private String saveEncodePath;
+
+    private RecordSession mSession = RecordSession.getInstance();
 
     /**
      * 录音数据拿取
@@ -137,6 +151,7 @@ public class RecordClient {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                mEncodeProcessor.start();
                 while (isWriting ) {
                     int audioRecordBufferSize = RecordSession.getInstance().getRecordBufSize();
                     short[] buffer = new short[audioRecordBufferSize];
@@ -149,11 +164,17 @@ public class RecordClient {
                     int readSize;
                     readSize = mPlayCycleBuffer.read(buffer, audioRecordBufferSize);
 
+                    short[] playBuffer = new short[readSize];
+
                     try {
                         if(buffer != null && readSize > 0){
                             for (int i = 0; i < readSize; i++) {
-                                dos.writeShort(Short.reverseBytes(buffer[i]));
+                                playBuffer[i] = Short.reverseBytes(buffer[i]);
+                                dos.writeShort(playBuffer[i]);
                                 dos.flush();
+                            }
+                            synchronized (mEncodeCycleBuffer) {
+                                mEncodeCycleBuffer.write(playBuffer, readSize);
                             }
                         }
                     } catch (IOException e) {
@@ -165,7 +186,7 @@ public class RecordClient {
                 bos.close();
                 dos.close();
                 Pcm2Wav p2w = new Pcm2Wav();//将pcm格式转换成wav 其实就加了一个44字节的头信息
-                p2w.convertAudioFiles(savePcmPath, saveWavPath,44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+                p2w.convertAudioFiles(savePcmPath, saveWavPath,mSession.getOutSampleRate(), mSession.getOutChannels(), AudioFormat.ENCODING_PCM_16BIT);
             } catch (Exception e) {
                 Log.e(TAG, "mWrittingRunnable Exception e : ", e);
             }
@@ -186,12 +207,16 @@ public class RecordClient {
     public RecordClient(String audioName,String path) {
         mRevCycleBuffer = new CycleBuffer(REV_CYCLE_BUFFER_SIZE);
         mPlayCycleBuffer = new CycleBuffer(PLAY_CYCLE_BUFFER_SIZE);
+        mEncodeCycleBuffer = new CycleBuffer(REV_CYCLE_BUFFER_SIZE);
         mRecordProcessor = new RecordProcessor("RecordProcessor", mRevCycleBuffer);
         mAudioPlayProcessor = new AudioPlayProcessor("AudioPlayProcessor", mPlayCycleBuffer);
+
         mReceiveRecordThread = new Thread(mReceiveRecordRunnable,"ReceiveRecordThread");
         mWriteRunnableThread = new Thread(mWrittingRunnable, "WriteRunnableThread");
         savePcmPath = path + audioName +".pcm";
         saveWavPath = path + audioName +".wav";
+        saveEncodePath = path + audioName + "encode" +".aac";
+        mEncodeProcessor = new EncodeProcessor("EncodeProcessor", mEncodeCycleBuffer, saveEncodePath);
     }
 
     public void start() {

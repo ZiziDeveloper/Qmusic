@@ -23,11 +23,6 @@ public class RecordProcessor extends Thread {
     private static final String TAG = RecordLogTag.RECORD_PROCCESS_TAG + "RecordProcessor";
 
     /**
-     * 设置音频采样率，44100是目前的标准，但是某些设备仍然支持22050，16000，11025
-     */
-    private static final int FREQUENCY = 44100;
-
-    /**
      * AudioRecord创建时允许使用最大的bufferSize
      */
     private static final int AUDIO_RECORD_MAX_BUF_SIZE = 4 * 6000;
@@ -40,17 +35,7 @@ public class RecordProcessor extends Thread {
      */
     private int mRecMinBufSize;
 
-    /**
-     * 单声道或者双声道
-     */
-    private int channels = AudioFormat.CHANNEL_IN_MONO;
-
     private AudioRecord mAudioRecord;
-
-    /**
-     * 是否正在录音
-     */
-    private boolean isRecording = false;
 
     /**
      * 用于生产者与消费者之前传递音频数据的buffer
@@ -68,6 +53,13 @@ public class RecordProcessor extends Thread {
      * 是否使用usb音频设备
      */
     private boolean mIsUsbMicIn;
+
+    private RecordSession mSession = RecordSession.getInstance();
+
+    /**
+     * 音频录制采样率
+     */
+    private int mInSampleRate = mSession.getInSampleRate();
 
     public RecordProcessor(@NonNull String name, CycleBuffer buffer) {
         super(name);
@@ -95,7 +87,7 @@ public class RecordProcessor extends Thread {
         short[] buffer = new short[mRecBufSize];
         mAudioRecord.startRecording();
         try{
-            while (isRecording) {
+            while (mSession.isRecording()) {
                 int readSize = mAudioRecord.read(buffer, 0, mRecBufSize);
                 if (readSize <= 0) {
                     sleep(1);
@@ -111,12 +103,12 @@ public class RecordProcessor extends Thread {
     }
 
     public void proccessStart() {
-        isRecording = true;
+        mSession.setIsRecording(true);
         start();
     }
 
     public void proccessStop(){
-        isRecording = false;
+        mSession.setIsRecording(false);
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -124,29 +116,29 @@ public class RecordProcessor extends Thread {
         if (audioDeviceInfo != null) {
             for (int i = 0; i < audioDeviceInfo.getChannelCounts().length; i++) {
                 if (audioDeviceInfo.getChannelCounts()[i] == 2) {
-                    channels = AudioFormat.CHANNEL_IN_STEREO;
+                    mSession.setInChannels(AudioFormat.CHANNEL_IN_STEREO);
                     break;
                 } else {
-                    channels = AudioFormat.CHANNEL_IN_MONO;
+                    mSession.setInChannels(AudioFormat.CHANNEL_IN_MONO);
                 }
             }
         } else {
-            channels = AudioFormat.CHANNEL_IN_MONO;
+            mSession.setInChannels(AudioFormat.CHANNEL_IN_MONO);
         }
-        mRecMinBufSize = AudioRecord.getMinBufferSize(FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT);
+        mRecMinBufSize = AudioRecord.getMinBufferSize(mInSampleRate, mSession.getInChannels(), AudioFormat.ENCODING_PCM_16BIT);
 
         if (mRecMinBufSize > 0) {
             mRecBufSize = audioBufSize(mRecMinBufSize);
             AudioRecord audioRecord = null;
             if (mIsBluetoothOn) {
                 mRecBufSize = mRecMinBufSize;
-                audioRecord = newAudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
+                audioRecord = newAudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, mInSampleRate, mSession.getInChannels(), AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
             } else {
-                audioRecord = newAudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
+                audioRecord = newAudioRecord(MediaRecorder.AudioSource.MIC, mInSampleRate, mSession.getInChannels(), AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
                 if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
                     do {
                         mRecBufSize = mRecBufSize / 2;
-                        audioRecord = newAudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, channels, AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
+                        audioRecord = newAudioRecord(MediaRecorder.AudioSource.MIC, mInSampleRate, mSession.getInChannels(), AudioFormat.ENCODING_PCM_16BIT, mRecBufSize);
                         if (audioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
                             return  audioRecord;
                         }

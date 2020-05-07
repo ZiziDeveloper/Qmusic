@@ -14,6 +14,8 @@ import com.zizi.playlib.codec.AACEncodeJniProxy;
 import com.zizi.qmusic.qmusic.R;
 import com.zizi.qmusic.record.AndroidAudioRecorder;
 
+import java.io.RandomAccessFile;
+
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_RECORD_AUDIO = 0;
     private static final String AUDIO_FILE_PATH =
@@ -53,10 +55,5 @@ public class MainActivity extends AppCompatActivity {
                 .setRequestCode(REQUEST_RECORD_AUDIO)
                 // Start recording
                 .record();
-        AACEncodeJniProxy proxy = new AACEncodeJniProxy();
-        int []frame = new int[1];
-        proxy.init(2, 44100, 128000, frame);
-        short[] buffer = new short[2];
-        proxy.encode(buffer, 2);
     }
 }

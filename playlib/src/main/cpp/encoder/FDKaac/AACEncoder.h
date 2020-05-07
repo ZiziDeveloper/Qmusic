@@ -51,7 +51,7 @@ public:
      * @param inBufLen 待编码缓存长度
      * @param outBufLen 编码之后缓存长度
      */
-    void encode(short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen, int outBufLen);
+    int encode(short* ptrInBuffer, uint8_t *ptrOutBuffer, int inBufLen, int outBufLen, int *pNumOutBytes);
 
     /**
      * 销毁编码器
