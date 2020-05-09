@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.zizi.playlib.CycleBuffer;
 import com.zizi.playlib.codec.AACEncodeJniProxy;
+import com.zizi.playlib.nativeUtils.FileUtilJniProxy;
 import com.zizi.playlib.record.utils.RecordLogTag;
 
 import java.io.File;

@@ -6,6 +6,7 @@
 #include "NotifyApplication.h"
 extern "C" {
    extern jint AACEncodeRegisterNativeMethods(JNIEnv *env);
+   extern jint FileUtilRegisterNativeMethods(JNIEnv *env);
 }
 
 AudioProccessor* pAudioProccessor = nullptr;
@@ -224,6 +225,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     LOGI("RegisterNativeMethods result : %d ", result);
     result = AACEncodeRegisterNativeMethods(env);
     LOGI("AACEncodeRegisterNativeMethods result : %d ", result);
+    result = FileUtilRegisterNativeMethods(env);
+    LOGI("FileUtilRegisterNativeMethods result : %d ", result);
     return JNI_VERSION_1_4;
 }
 

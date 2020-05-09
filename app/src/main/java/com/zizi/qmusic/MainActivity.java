@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.zizi.playlib.codec.AACEncodeJniProxy;
 import com.zizi.qmusic.qmusic.R;
 import com.zizi.qmusic.record.AndroidAudioRecorder;
 
