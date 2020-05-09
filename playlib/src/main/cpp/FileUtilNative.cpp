@@ -65,9 +65,34 @@ extern "C" {
      * @param length
      * @return
      */
-    jboolean writeFile(JNIEnv *env, jobject obj,jint startWrite, jshortArray buffer, jint offset, jint length) {
+    jboolean writeFile(JNIEnv *env, jobject obj, jint fd, jint startWrite, jshortArray buffer, jint offset, jint length) {
         LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: writeFile");
-        return 0;
+        if (fd < 0) {
+            LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: writeFile fd < 0 ");
+            return 0;
+        }
+
+        jshort* data = env->GetShortArrayElements(buffer, nullptr);
+
+        if (data == nullptr) {
+            env->ReleaseShortArrayElements(buffer, data, 0);
+            LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: writeFile data == nullptr ");
+            return 0;
+        }
+
+        if (-1 == lseek(fd, startWrite * 2, SEEK_SET)) {
+            env->ReleaseShortArrayElements(buffer, data, 0);
+            LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: writeFile seek fail ");
+            return 0;
+        }
+
+        if (length * 2 != write(fd, (void *)(data + offset), length * 2)) {
+            env->ReleaseShortArrayElements(buffer, data, 0);
+            LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: writeFile write fail ");
+            return 0;
+        }
+        env->ReleaseShortArrayElements(buffer, data, 0);
+        return 1;
     }
 
     /**
@@ -80,7 +105,7 @@ extern "C" {
      * @param length
      * @return
      */
-    jboolean readFile(JNIEnv *env, jobject obj,jint startRead, jshortArray buffer, jint offset, jint length) {
+    jboolean readFile(JNIEnv *env, jobject obj, jint fd, jint startRead, jshortArray buffer, jint offset, jint length) {
         LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: readFile");
         return 0;
     }
