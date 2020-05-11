@@ -107,8 +107,42 @@ extern "C" {
      */
     jboolean readFile(JNIEnv *env, jobject obj, jint fd, jint startRead, jshortArray buffer, jint offset, jint length) {
         LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: readFile");
-        return 0;
+        if (fd < 0) {
+            LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: readFile fd < 0");
+            return 0;
+        }
+
+        jshort* data = env->GetShortArrayElements(buffer, 0);
+        if (data == nullptr) {
+            LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: readFile data == nullptr");
+            env->ReleaseShortArrayElements(buffer, data, 0);
+            return 0;
+        }
+
+        if (-1 == lseek(fd, startRead * 2, SEEK_SET)) {
+            LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: readFile lseek == -1");
+            env->ReleaseShortArrayElements(buffer, data, 0);
+            return 0;
+        }
+
+        int readCount = 0;
+        int count = 0;
+        while((count = read(fd, data + offset, length * 2 - readCount)) > 0
+            && count < length * 2 - readCount) {
+            readCount += count;
+        }
+
+        if (count < 0) {
+            LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: count < 0");
+            env->ReleaseShortArrayElements(buffer, data, 0);
+            return 0;
+        }
+        env->ReleaseShortArrayElements(buffer, data, 0);
+
+        return 1;
     }
+
+
     jint FileUtilRegisterNativeMethods(JNIEnv *env) {
         jclass clazz = env->FindClass("com/zizi/playlib/nativeUtils/FileUtilJniProxy");
         if (clazz == nullptr) {
