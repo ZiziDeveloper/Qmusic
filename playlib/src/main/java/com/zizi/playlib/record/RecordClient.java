@@ -2,11 +2,11 @@ package com.zizi.playlib.record;
 
 import android.media.AudioFormat;
 import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.util.Log;
 
 import com.zizi.playlib.CycleBuffer;
-import com.zizi.playlib.codec.AACEncodeJniProxy;
+import com.zizi.playlib.record.encode.EncodePreBuffer;
+import com.zizi.playlib.record.encode.EncodeProcessor;
 import com.zizi.playlib.record.utils.Pcm2Wav;
 import com.zizi.playlib.record.utils.RecordLogTag;
 
@@ -45,13 +45,14 @@ public class RecordClient {
     private CycleBuffer mPlayCycleBuffer;
 
     /**
-     * 编码数据缓存
-     */
-    private CycleBuffer mEncodeCycleBuffer;
-    /**
      * 编码音频数据线程
      */
     private EncodeProcessor mEncodeProcessor;
+
+    /**
+     * 编码音频前处理数据线程
+     */
+    private EncodePreBuffer mEncodePreBuffer;
 
     private Thread mReceiveRecordThread;
     private Thread mWriteRunnableThread;
@@ -151,7 +152,10 @@ public class RecordClient {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                mEncodePreBuffer.startProcess();
                 mEncodeProcessor.start();
+
                 while (isWriting ) {
                     int audioRecordBufferSize = RecordSession.getInstance().getRecordBufSize();
                     short[] buffer = new short[audioRecordBufferSize];
@@ -164,22 +168,23 @@ public class RecordClient {
                     int readSize;
                     readSize = mPlayCycleBuffer.read(buffer, audioRecordBufferSize);
 
+
                     short[] playBuffer = new short[readSize];
+                    short[] aacBuffer = new short[readSize];
 
                     try {
                         if(buffer != null && readSize > 0){
                             for (int i = 0; i < readSize; i++) {
+                                aacBuffer[i] = buffer[i];
                                 playBuffer[i] = Short.reverseBytes(buffer[i]);
                                 dos.writeShort(playBuffer[i]);
                                 dos.flush();
-                            }
-                            synchronized (mEncodeCycleBuffer) {
-                                mEncodeCycleBuffer.write(playBuffer, readSize);
                             }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    mEncodePreBuffer.write(aacBuffer);
                 }
 
                 fos2wav.close();
@@ -207,7 +212,6 @@ public class RecordClient {
     public RecordClient(String audioName,String path) {
         mRevCycleBuffer = new CycleBuffer(REV_CYCLE_BUFFER_SIZE);
         mPlayCycleBuffer = new CycleBuffer(PLAY_CYCLE_BUFFER_SIZE);
-        mEncodeCycleBuffer = new CycleBuffer(REV_CYCLE_BUFFER_SIZE);
         mRecordProcessor = new RecordProcessor("RecordProcessor", mRevCycleBuffer);
         mAudioPlayProcessor = new AudioPlayProcessor("AudioPlayProcessor", mPlayCycleBuffer);
 
@@ -216,7 +220,9 @@ public class RecordClient {
         savePcmPath = path + audioName +".pcm";
         saveWavPath = path + audioName +".wav";
         saveEncodePath = path + audioName + "encode" +".aac";
-        mEncodeProcessor = new EncodeProcessor("EncodeProcessor", mEncodeCycleBuffer, saveEncodePath);
+
+        mEncodePreBuffer = new EncodePreBuffer();
+        mEncodeProcessor = new EncodeProcessor("EncodeProcessor", mEncodePreBuffer, saveEncodePath);
     }
 
     public void start() {
@@ -235,6 +241,7 @@ public class RecordClient {
         isRecording = false;
         isWriting = false;
         mRecordProcessor.proccessStop();
+        mEncodePreBuffer.setStop(true);
 //        mAudioPlayProcessor.proccessStop();
         if (mOnRecordNotifyListner != null) {
             mOnRecordNotifyListner.onStop();

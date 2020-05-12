@@ -66,7 +66,7 @@ extern "C" {
      * @return
      */
     jboolean writeFile(JNIEnv *env, jobject obj, jint fd, jint startWrite, jshortArray buffer, jint offset, jint length) {
-        LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: writeFile");
+
         if (fd < 0) {
             LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: writeFile fd < 0 ");
             return 0;
@@ -106,7 +106,7 @@ extern "C" {
      * @return
      */
     jboolean readFile(JNIEnv *env, jobject obj, jint fd, jint startRead, jshortArray buffer, jint offset, jint length) {
-        LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: readFile");
+
         if (fd < 0) {
             LOGE("class: com/zizi/playlib/nativeUtils/FileUtilJniProxy: readFile fd < 0");
             return 0;

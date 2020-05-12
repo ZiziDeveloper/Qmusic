@@ -1,12 +1,11 @@
-package com.zizi.playlib.record;
+package com.zizi.playlib.record.encode;
 
 import android.media.AudioFormat;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.zizi.playlib.CycleBuffer;
 import com.zizi.playlib.codec.AACEncodeJniProxy;
-import com.zizi.playlib.nativeUtils.FileUtilJniProxy;
+import com.zizi.playlib.record.RecordSession;
 import com.zizi.playlib.record.utils.RecordLogTag;
 
 import java.io.File;
@@ -23,7 +22,7 @@ public class EncodeProcessor extends Thread {
     /**
      * 编码传递缓存
      */
-    private CycleBuffer mEncodeCycleBuffer;
+    private EncodePreBuffer mEncodePreBuffer;
 
     private String mEncodePath;
 
@@ -34,19 +33,16 @@ public class EncodeProcessor extends Thread {
 
     private RecordSession mSession = RecordSession.getInstance();
 
-    public EncodeProcessor(@NonNull String name, CycleBuffer encodeCycleBuffer, String encodePath) {
+    public EncodeProcessor(@NonNull String name, EncodePreBuffer encodeBuffer, String encodePath) {
         super(name);
         this.mProxy = new AACEncodeJniProxy();
-        this.mEncodeCycleBuffer = encodeCycleBuffer;
+        this.mEncodePreBuffer = encodeBuffer;
         this.mEncodePath = encodePath;
     }
 
     @Override
     public void run() {
         int[] frameLen = new int[1];
-        short[] buffer ;
-        int encodeCount = 10;
-        int i = 0;
 
         try {
             File file = new File(mEncodePath);
@@ -54,7 +50,7 @@ public class EncodeProcessor extends Thread {
                 file.createNewFile();
             }
             RandomAccessFile randfile = new RandomAccessFile(file,"rw");
-            int offset = 0;
+
             int channel = 0;
             if (mSession.getOutChannels() == AudioFormat.CHANNEL_OUT_STEREO) {
                 channel = 2;
@@ -68,32 +64,21 @@ public class EncodeProcessor extends Thread {
             }
             Log.e(TAG, "mProxy.cycle error : " + result);
 
-            while (mSession.isRecording() || mEncodeCycleBuffer.getUnreadLen() > 0) {
-                int unRead = mEncodeCycleBuffer.getUnreadLen();
-                if (unRead <= 0) {
+            EncodeData encodeData;
+            while (mSession.isRecording()) {
+                encodeData = mEncodePreBuffer.read();
+                if (encodeData.validateLength == 0) {
                     try {
-                        sleep(10);
-                        continue;
+                        sleep(20);
                     } catch (InterruptedException e) {
-                        Log.e(TAG, "InterruptedException error : " + e);
+                        Log.e(TAG, "InterruptedException : " + e);
                     }
+                    continue;
                 }
 
-                int audioRecordBufferSize = RecordSession.getInstance().getRecordBufSize();
-                buffer = new short[audioRecordBufferSize];
-                int readSize = mEncodeCycleBuffer.read(buffer, audioRecordBufferSize);
-
-                synchronized (mEncodeCycleBuffer) {
-                    mEncodeCycleBuffer.read(buffer, readSize);
-                }
-                Log.e(TAG, "mProxy.encode readSize : " + readSize + " buffer.length : " + buffer.length);
-                byte[] encodeDatas;
-                if (i < encodeCount) {
-                    i++;
-                } else {
-                    encodeDatas = mProxy.encode(buffer, readSize);
-                    randfile.write(encodeDatas, 0, encodeDatas.length);
-                }
+                byte[] aacDatas;
+                aacDatas = mProxy.encode(encodeData.mData, encodeData.validateLength);
+                randfile.write(aacDatas, 0, aacDatas.length);
             }
             randfile.close();
             mProxy.destroy();
