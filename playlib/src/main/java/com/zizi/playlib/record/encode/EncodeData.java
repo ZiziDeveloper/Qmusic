@@ -9,6 +9,6 @@ public class EncodeData {
     public int validateLength;
 
     public EncodeData() {
-        mData = new short[2 * 1024];
+        mData = new short[1 * 1024];
     }
 }
